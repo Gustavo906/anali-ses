@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Diamante Músicas - Streaming Premium</title>
+    <script src="https://puter.com/puter.js"></script>
     <style>
         * {
             margin: 0;
@@ -24,6 +25,7 @@
             --success: #00F5D4;
             --warning: #FFBE0B;
             --diamond: #E0E0E0;
+            --spotify: #1DB954;
         }
 
         html {
@@ -36,10 +38,9 @@
             color: var(--text);
             min-height: 100vh;
             overflow-x: hidden;
-            padding-bottom: 120px; /* Espaço para o player fixo */
+            padding-bottom: 120px;
         }
 
-        /* Animação de diamante no fundo */
         .bg-animation {
             position: fixed;
             top: 0;
@@ -70,7 +71,6 @@
             50% { transform: rotate(45deg) translateY(-20px); opacity: 0.6; }
         }
 
-        /* Header fixo corretamente */
         header {
             background: rgba(5, 5, 8, 0.95);
             backdrop-filter: blur(20px);
@@ -132,7 +132,6 @@
             -webkit-text-fill-color: var(--text-secondary);
         }
 
-        /* Busca */
         .search-container {
             display: flex;
             gap: 0.5rem;
@@ -157,10 +156,6 @@
             box-shadow: 0 0 20px rgba(0,217,255,0.2);
         }
 
-        .search-input::placeholder {
-            color: var(--text-secondary);
-        }
-
         .btn {
             padding: 0.75rem 1.5rem;
             border: none;
@@ -180,6 +175,17 @@
             box-shadow: 0 8px 25px rgba(0,217,255,0.3);
         }
 
+        .btn-spotify {
+            background: linear-gradient(135deg, var(--spotify) 0%, #1ed760 100%);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-spotify:hover {
+            box-shadow: 0 8px 25px rgba(29,185,84,0.3);
+        }
+
         .btn-secondary {
             background: transparent;
             border: 2px solid var(--primary);
@@ -189,12 +195,15 @@
             background: var(--primary);
         }
 
-        /* Espaçamento para o header fixo */
+        .btn-generate {
+            background: linear-gradient(135deg, var(--accent) 0%, #ff4d6d 100%);
+            margin-top: 1rem;
+        }
+
         .main-content {
             margin-top: 100px;
         }
 
-        /* Filtros */
         .filters {
             max-width: 1400px;
             margin: 2rem auto;
@@ -236,14 +245,12 @@
             box-shadow: 0 4px 15px rgba(0,217,255,0.2);
         }
 
-        /* Container principal */
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 0 2rem;
         }
 
-        /* Seções */
         .section {
             margin-bottom: 4rem;
         }
@@ -265,7 +272,29 @@
             border-radius: 2px;
         }
 
-        /* Grid de músicas */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: var(--card);
+            border-radius: 12px;
+            border: 1px solid rgba(0,217,255,0.1);
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
         .tracks-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -386,7 +415,32 @@
             letter-spacing: 0.5px;
         }
 
-        /* Player fixo corrigido - posição absolute em relação ao body */
+        .ai-section {
+            background: linear-gradient(135deg, rgba(255,0,110,0.1) 0%, rgba(0,217,255,0.1) 100%);
+            border: 1px solid rgba(255,0,110,0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        .ai-section h3 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .ai-result {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .ai-result img {
+            max-width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
         .player {
             position: fixed;
             bottom: 0;
@@ -517,25 +571,6 @@
             position: relative;
         }
 
-        .progress-fill::after {
-            content: '';
-            position: absolute;
-            right: -8px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 16px;
-            height: 16px;
-            background: white;
-            border-radius: 50%;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .progress-bar:hover .progress-fill::after {
-            opacity: 1;
-        }
-
         .time {
             display: flex;
             justify-content: space-between;
@@ -570,7 +605,6 @@
             cursor: pointer;
         }
 
-        /* Loading e estados */
         .loading {
             text-align: center;
             padding: 4rem 2rem;
@@ -616,7 +650,27 @@
             opacity: 0.5;
         }
 
-        /* Toast */
+        .login-screen {
+            text-align: center;
+            padding: 6rem 2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .login-screen h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .login-screen p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
         .toast {
             position: fixed;
             top: 120px;
@@ -644,7 +698,6 @@
             box-shadow: 0 10px 30px rgba(255,0,110,0.3);
         }
 
-        /* Responsivo */
         @media (max-width: 768px) {
             .header-content {
                 flex-direction: column;
@@ -696,7 +749,6 @@
             }
         }
 
-        /* Scrollbar personalizada */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -714,7 +766,6 @@
             background: var(--primary);
         }
 
-        /* Animação de pulso para o logo */
         @keyframes pulse {
             0%, 100% { filter: drop-shadow(0 0 5px rgba(0,217,255,0.3)); }
             50% { filter: drop-shadow(0 0 20px rgba(0,217,255,0.6)); }
@@ -722,6 +773,10 @@
 
         .logo::before {
             animation: pulse 2s infinite;
+        }
+
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
@@ -742,488 +797,447 @@
                     <span class="logo-sub">Músicas</span>
                 </div>
             </div>
-            <div class="search-container">
-                <input type="text" class="search-input" id="searchInput" placeholder="Buscar artistas, músicas...">
+            
+            <div class="search-container" id="search-container">
+                <input type="text" class="search-input" placeholder="Buscar músicas, artistas..." id="search-input">
                 <button class="btn" onclick="searchTracks()">Buscar</button>
             </div>
+
+            <button class="btn btn-spotify" id="spotify-login-btn" onclick="loginWithSpotify()">
+                🎵 Conectar Spotify
+            </button>
+            
+            <button class="btn btn-secondary hidden" id="logout-btn" onclick="logout()">
+                Sair
+            </button>
         </div>
     </header>
 
     <div class="main-content">
-        <div class="filters">
-            <span class="filter-label">Gêneros:</span>
-            <div class="filter-tags">
-                <span class="tag active" onclick="filterByGenre('all')">Todos</span>
-                <span class="tag" onclick="filterByGenre('brazil')">Brasil</span>
-                <span class="tag" onclick="filterByGenre('funk')">Funk</span>
-                <span class="tag" onclick="filterByGenre('samba')">Samba</span>
-                <span class="tag" onclick="filterByGenre('sertanejo')">Sertanejo</span>
-                <span class="tag" onclick="filterByGenre('pop')">Pop</span>
-                <span class="tag" onclick="filterByGenre('electronic')">Eletrônica</span>
-                <span class="tag" onclick="filterByGenre('rap')">Rap</span>
-            </div>
+        <!-- Tela de Login -->
+        <div class="login-screen" id="login-screen">
+            <h2>Descubra Suas Músicas</h2>
+            <p>Conecte sua conta Spotify para visualizar suas músicas mais ouvidas e gerar arte exclusiva com IA baseada no seu gosto musical.</p>
+            <button class="btn btn-spotify" onclick="loginWithSpotify()" style="font-size: 1.2rem; padding: 1rem 2rem;">
+                🎵 Conectar com Spotify
+            </button>
         </div>
 
-        <main class="container">
-            <!-- Seção Trending -->
+        <!-- Tela Principal (após login) -->
+        <div class="container hidden" id="main-app">
+            <div class="user-info" id="user-info">
+                <!-- Preenchido via JS -->
+            </div>
+
             <section class="section">
-                <h2 class="section-title">🔥 Em Alta</h2>
-                <div id="trendingContainer" class="tracks-grid">
+                <h2 class="section-title">Suas Top Músicas</h2>
+                <div class="filters">
+                    <span class="filter-label">Período:</span>
+                    <div class="filter-tags">
+                        <span class="tag active" onclick="changeTimeRange('long_term', this)">Últimos anos</span>
+                        <span class="tag" onclick="changeTimeRange('medium_term', this)">Últimos 6 meses</span>
+                        <span class="tag" onclick="changeTimeRange('short_term', this)">Últimas 4 semanas</span>
+                    </div>
+                </div>
+                <div class="tracks-grid" id="top-tracks">
                     <div class="loading">
                         <div class="spinner"></div>
-                        Carregando músicas...
+                        <p>Carregando suas músicas...</p>
                     </div>
                 </div>
             </section>
 
-            <!-- Seção Busca -->
-            <section class="section" id="searchSection" style="display: none;">
-                <h2 class="section-title">🔍 Resultados</h2>
-                <div id="searchContainer" class="tracks-grid"></div>
-            </section>
-
-            <!-- Seção Brasil -->
             <section class="section">
-                <h2 class="section-title">🇧🇷 Made in Brazil</h2>
-                <div id="brazilContainer" class="tracks-grid">
+                <h2 class="section-title">Recomendadas para Você</h2>
+                <div class="tracks-grid" id="recommendations">
                     <div class="loading">
                         <div class="spinner"></div>
-                        Carregando artistas brasileiros...
+                        <p>Carregando recomendações...</p>
                     </div>
                 </div>
             </section>
-        </main>
+
+            <!-- Seção de IA -->
+            <div class="ai-section">
+                <h3>✨ Gerar Arte com IA</h3>
+                <p>Crie uma imagem única baseada nas suas músicas favoritas</p>
+                <button class="btn btn-generate" onclick="generateArt()">
+                    🎨 Criar Arte Musical
+                </button>
+                <div class="ai-result" id="ai-result"></div>
+            </div>
+        </div>
     </div>
 
-    <!-- Player Fixo - Agora realmente fixo -->
+    <!-- Player Fixo -->
     <div class="player" id="player">
         <div class="player-content">
             <div class="player-info">
-                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%2312121a'/%3E%3Ctext x='50%25' y='50%25' font-size='60' text-anchor='middle' dy='.3em' fill='%2300D9FF'%3E♪%3C/text%3E%3C/svg%3E" 
-                     alt="Capa" class="player-image" id="playerImage">
+                <img src="" alt="Capa" class="player-image" id="player-image">
                 <div class="player-text">
-                    <div class="player-title" id="playerTitle">Selecione uma música</div>
-                    <div class="player-artist" id="playerArtist">Diamante Músicas</div>
+                    <div class="player-title" id="player-title">Selecione uma música</div>
+                    <div class="player-artist" id="player-artist">-</div>
                 </div>
             </div>
-
+            
             <div class="player-controls">
-                <button class="control-btn" onclick="previousTrack()" title="Anterior">⏮</button>
-                <button class="control-btn play" id="playBtn" onclick="togglePlay()" title="Play/Pause">▶</button>
-                <button class="control-btn" onclick="nextTrack()" title="Próxima">⏭</button>
+                <button class="control-btn" onclick="previousTrack()">⏮</button>
+                <button class="control-btn play" id="play-btn" onclick="togglePlay()">▶</button>
+                <button class="control-btn" onclick="nextTrack()">⏭</button>
             </div>
-
+            
             <div class="progress-container">
                 <div class="progress-bar" onclick="seek(event)">
-                    <div class="progress-fill" id="progressFill"></div>
+                    <div class="progress-fill" id="progress-fill"></div>
                 </div>
                 <div class="time">
-                    <span id="currentTime">0:00</span>
-                    <span id="duration">0:00</span>
+                    <span id="current-time">0:00</span>
+                    <span id="total-time">0:00</span>
                 </div>
             </div>
-
+            
             <div class="volume-container">
                 <span>🔊</span>
                 <input type="range" class="volume-slider" min="0" max="100" value="70" onchange="setVolume(this.value)">
             </div>
         </div>
-        <audio id="audioPlayer" preload="metadata" crossorigin="anonymous"></audio>
     </div>
 
+    <!-- Toast -->
     <div class="toast" id="toast"></div>
 
     <script>
-        // Configuração da API Audius com Proxy CORS
-        const PROXY_URL = 'https://api.allorigins.win/raw?url=';
-        const AUDIUS_API = 'https://discoveryprovider.audius.co/v1';
-        const APP_NAME = 'DiamanteMusicas';
+        // CONFIGURAÇÃO SPOTIFY
+        const SPOTIFY_CLIENT_ID = 'f2bcdaa514274dda8eba005fb0e266ab';
+        const SPOTIFY_REDIRECT_URI = 'https://transcendent-ganache-94d87b.netlify.app/callback';
         
-        // Estado da aplicação
-        let currentTrack = null;
+        let currentToken = null;
+        let currentTracks = [];
+        let currentTrackIndex = 0;
         let isPlaying = false;
-        let currentPlaylist = [];
-        let currentIndex = 0;
-        let audioPlayer = document.getElementById('audioPlayer');
-        let isReady = false;
+        let currentTimeRange = 'long_term';
 
-        // Inicialização
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeApp();
+        // Verificar se está na página de callback
+        if (window.location.pathname.includes('callback')) {
+            handleCallback();
+        } else {
+            // Verificar se já tem token
+            const token = localStorage.getItem('spotify_token');
+            if (token) {
+                currentToken = token;
+                showMainApp();
+            }
+        }
+
+        function loginWithSpotify() {
+            const scope = 'user-read-private user-read-email user-top-read user-read-playback-state user-modify-playback-state streaming';
+            const state = generateRandomString(16);
             
-            // Busca com Enter
-            document.getElementById('searchInput').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') searchTracks();
-            });
-
-            // Eventos do player
-            audioPlayer.addEventListener('timeupdate', updateProgress);
-            audioPlayer.addEventListener('ended', () => {
-                showToast('✨ Música finalizada');
-                nextTrack();
-            });
-            audioPlayer.addEventListener('loadedmetadata', () => {
-                document.getElementById('duration').textContent = formatTime(audioPlayer.duration);
-            });
-            audioPlayer.addEventListener('error', (e) => {
-                console.error('Erro no áudio:', e);
-                showToast('❌ Erro ao carregar áudio', 'error');
-                isPlaying = false;
-                updatePlayButton();
-            });
-        });
-
-        async function initializeApp() {
-            try {
-                await loadTrending();
-                await loadBrazilianTracks();
-                isReady = true;
-            } catch (error) {
-                console.error('Erro na inicialização:', error);
-                showToast('⚠️ Erro ao carregar dados', 'error');
-            }
-        }
-
-        // Função auxiliar para fetch com proxy CORS
-        async function fetchWithProxy(url) {
-            try {
-                // Tentar sem proxy primeiro (pode funcionar em alguns navegadores)
-                try {
-                    const response = await fetch(url, {
-                        headers: {
-                            'Accept': 'application/json',
-                        }
-                    });
-                    if (response.ok) return response;
-                } catch (e) {
-                    // Ignora e tenta com proxy
-                }
-
-                // Usar proxy AllOrigins
-                const proxyUrl = PROXY_URL + encodeURIComponent(url);
-                const response = await fetch(proxyUrl, {
-                    headers: {
-                        'Accept': 'application/json',
-                    }
-                });
-                
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response;
-            } catch (error) {
-                throw error;
-            }
-        }
-
-        // Carregar trending
-        async function loadTrending() {
-            const container = document.getElementById('trendingContainer');
+            localStorage.setItem('spotify_auth_state', state);
             
-            try {
-                const response = await fetchWithProxy(`${AUDIUS_API}/tracks/trending?app_name=${APP_NAME}&limit=12`);
-                const data = await response.json();
-                
-                if (data.data && data.data.length > 0) {
-                    displayTracks(data.data, 'trendingContainer');
-                    if (currentPlaylist.length === 0) {
-                        currentPlaylist = data.data;
-                    }
-                } else {
-                    throw new Error('Nenhum dado retornado');
-                }
-            } catch (error) {
-                console.error('Erro trending:', error);
-                container.innerHTML = `
-                    <div class="error">
-                        💎 Não foi possível carregar as músicas em alta.<br>
-                        <small>Tente recarregar a página</small>
-                    </div>
-                `;
-            }
-        }
-
-        // Carregar músicas brasileiras
-        async function loadBrazilianTracks() {
-            const container = document.getElementById('brazilContainer');
-            const searchTerms = ['brazil', 'brasil', 'anitta', 'funk', 'samba', 'sertanejo'];
-            const randomTerm = searchTerms[Math.floor(Math.random() * searchTerms.length)];
+            const params = new URLSearchParams({
+                response_type: 'token',
+                client_id: SPOTIFY_CLIENT_ID,
+                scope: scope,
+                redirect_uri: SPOTIFY_REDIRECT_URI,
+                state: state,
+                show_dialog: 'true'
+            });
             
-            try {
-                const response = await fetchWithProxy(`${AUDIUS_API}/tracks/search?query=${randomTerm}&app_name=${APP_NAME}&limit=12`);
-                const data = await response.json();
-                
-                if (data.data && data.data.length > 0) {
-                    displayTracks(data.data, 'brazilContainer');
-                } else {
-                    throw new Error('Nenhum dado retornado');
-                }
-            } catch (error) {
-                console.error('Erro Brazilian:', error);
-                container.innerHTML = `
-                    <div class="error">
-                        💎 Não foi possível carregar músicas brasileiras.<br>
-                        <small>Tente buscar manualmente</small>
-                    </div>
-                `;
+            window.location.href = `https://accounts.spotify.com/authorize?${params}`;
+        }
+
+        function generateRandomString(length) {
+            const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let text = '';
+            for (let i = 0; i < length; i++) {
+                text += possible.charAt(Math.floor(Math.random() * possible.length));
+            }
+            return text;
+        }
+
+        function handleCallback() {
+            const hash = window.location.hash.substring(1);
+            const params = new URLSearchParams(hash);
+            
+            const token = params.get('access_token');
+            const state = params.get('state');
+            const storedState = localStorage.getItem('spotify_auth_state');
+            
+            if (token && state === storedState) {
+                localStorage.setItem('spotify_token', token);
+                window.location.href = '/';
+            } else {
+                showToast('Erro na autenticação', 'error');
+                window.location.href = '/';
             }
         }
 
-        // Buscar músicas
-        async function searchTracks() {
-            const query = document.getElementById('searchInput').value.trim();
-            if (!query) {
-                showToast('🔍 Digite algo para buscar', 'error');
+        function logout() {
+            localStorage.removeItem('spotify_token');
+            localStorage.removeItem('spotify_auth_state');
+            currentToken = null;
+            window.location.reload();
+        }
+
+        async function showMainApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('spotify-login-btn').classList.add('hidden');
+            document.getElementById('logout-btn').classList.remove('hidden');
+            
+            await loadUserProfile();
+            await loadTopTracks();
+            await loadRecommendations();
+        }
+
+        async function fetchSpotify(endpoint) {
+            const response = await fetch(`https://api.spotify.com/v1/${endpoint}`, {
+                headers: {
+                    'Authorization': `Bearer ${currentToken}`
+                }
+            });
+            
+            if (response.status === 401) {
+                logout();
+                return null;
+            }
+            
+            return await response.json();
+        }
+
+        async function loadUserProfile() {
+            const user = await fetchSpotify('me');
+            if (!user) return;
+            
+            document.getElementById('user-info').innerHTML = `
+                <img src="${user.images[0]?.url || 'https://via.placeholder.com/50'}" alt="${user.display_name}" class="user-avatar">
+                <div>
+                    <div class="user-name">${user.display_name}</div>
+                    <div style="color: var(--text-secondary); font-size: 0.9rem;">${user.email}</div>
+                </div>
+            `;
+        }
+
+        async function loadTopTracks() {
+            const data = await fetchSpotify(`me/top/tracks?time_range=${currentTimeRange}&limit=20`);
+            if (!data) return;
+            
+            currentTracks = data.items;
+            displayTracks(data.items, 'top-tracks');
+        }
+
+        async function loadRecommendations() {
+            // Usar top tracks como semente para recomendações
+            const topTracks = await fetchSpotify('me/top/tracks?limit=5');
+            if (!topTracks || topTracks.items.length === 0) {
+                document.getElementById('recommendations').innerHTML = '<div class="empty"><div class="empty-icon">🎵</div><p>Ouça mais músicas para receber recomendações</p></div>';
                 return;
             }
-
-            const container = document.getElementById('searchContainer');
-            const section = document.getElementById('searchSection');
             
-            section.style.display = 'block';
-            container.innerHTML = '<div class="loading"><div class="spinner"></div>Buscando...</div>';
+            const seedTracks = topTracks.items.map(t => t.id).join(',');
+            const recommendations = await fetchSpotify(`recommendations?seed_tracks=${seedTracks}&limit=20`);
             
-            // Scroll suave para resultados
-            setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-
-            try {
-                const response = await fetchWithProxy(`${AUDIUS_API}/tracks/search?query=${encodeURIComponent(query)}&app_name=${APP_NAME}&limit=20`);
-                const data = await response.json();
-                
-                if (data.data && data.data.length > 0) {
-                    displayTracks(data.data, 'searchContainer');
-                    currentPlaylist = data.data;
-                    showToast(`✨ ${data.data.length} músicas encontradas`);
-                } else {
-                    container.innerHTML = `
-                        <div class="empty">
-                            <div class="empty-icon">💎</div>
-                            Nenhuma música encontrada para "${query}"<br>
-                            <small>Tente outro termo</small>
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('Erro busca:', error);
-                container.innerHTML = `
-                    <div class="error">
-                        💎 Erro na busca. Tente novamente.<br>
-                        <small>Verifique sua conexão</small>
-                    </div>
-                `;
+            if (recommendations && recommendations.tracks) {
+                displayTracks(recommendations.tracks, 'recommendations');
             }
         }
 
-        // Filtrar por gênero
-        async function filterByGenre(genre) {
-            // Atualizar UI
-            document.querySelectorAll('.tag').forEach(tag => tag.classList.remove('active'));
-            event.target.classList.add('active');
-
-            const container = document.getElementById('trendingContainer');
-            
-            if (genre === 'all') {
-                loadTrending();
-                return;
-            }
-
-            container.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando...</div>';
-
-            try {
-                const response = await fetchWithProxy(`${AUDIUS_API}/tracks/search?query=${genre}&app_name=${APP_NAME}&limit=12`);
-                const data = await response.json();
-                displayTracks(data.data, 'trendingContainer');
-            } catch (error) {
-                showError('trendingContainer', 'Erro ao filtrar músicas');
-            }
-        }
-
-        // Exibir músicas
         function displayTracks(tracks, containerId) {
             const container = document.getElementById(containerId);
             
-            if (!tracks || tracks.length === 0) {
-                container.innerHTML = `
-                    <div class="empty">
-                        <div class="empty-icon">💎</div>
-                        Nenhuma música encontrada
-                    </div>
-                `;
+            if (tracks.length === 0) {
+                container.innerHTML = '<div class="empty"><div class="empty-icon">🎵</div><p>Nenhuma música encontrada</p></div>';
                 return;
             }
-
-            container.innerHTML = tracks.map((track, index) => {
-                // Determinar qual playlist usar
-                const playlistId = containerId;
-                
-                return `
-                <div class="track-card" onclick="playTrack(${index}, '${playlistId}')">
+            
+            container.innerHTML = tracks.map((track, index) => `
+                <div class="track-card" onclick="playTrack(${index}, '${containerId}')">
                     <div class="track-image">
-                        <img src="${track.artwork ? track.artwork['480x480'] : 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'480\' height=\'480\'%3E%3Crect width=\'480\' height=\'480\' fill=\'%2312121a\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' font-size=\'120\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%2300D9FF\'%3E💎%3C/text%3E%3C/svg%3E'}" 
-                             alt="${track.title}" 
-                             loading="lazy"
-                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'480\' height=\'480\'%3E%3Crect width=\'480\' height=\'480\' fill=\'%2312121a\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' font-size=\'120\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%2300D9FF\'%3E💎%3C/text%3E%3C/svg%3E'">
+                        <img src="${track.album.images[0]?.url || 'https://via.placeholder.com/300'}" alt="${track.name}">
                         <div class="play-overlay">
                             <div class="play-btn">▶</div>
                         </div>
                     </div>
                     <div class="track-info">
-                        <div class="track-title">${track.title}</div>
-                        <div class="track-artist">${track.user.name}</div>
+                        <div class="track-title">${track.name}</div>
+                        <div class="track-artist">${track.artists.map(a => a.name).join(', ')}</div>
                         <div class="track-meta">
-                            <span class="track-genre">${track.genre || 'Música'}</span>
-                            <span>⏱ ${formatDuration(track.duration)}</span>
+                            <span>${formatDuration(track.duration_ms)}</span>
+                            <span class="track-genre">${track.album.album_type || 'Música'}</span>
                         </div>
                     </div>
                 </div>
-            `}).join('');
-
-            // Salvar referência para playlist
-            if (containerId !== 'searchContainer') {
-                // Atualiza a playlist atual baseada no container
-                window[`playlist_${containerId}`] = tracks;
-            }
+            `).join('');
         }
 
-        // Tocar música
-        async function playTrack(index, containerId) {
-            // Obter a playlist correta
-            let playlist;
-            if (containerId === 'searchContainer') {
-                playlist = currentPlaylist;
-            } else {
-                playlist = window[`playlist_${containerId}`] || currentPlaylist;
-            }
+        function changeTimeRange(range, element) {
+            currentTimeRange = range;
             
-            if (!playlist || !playlist[index]) {
-                showToast('❌ Música não encontrada', 'error');
-                return;
-            }
-
-            const track = playlist[index];
-            currentIndex = index;
-            currentTrack = track;
-            currentPlaylist = playlist; // Atualiza playlist atual
-
-            try {
-                showToast('💎 Carregando...');
-                
-                // Obter URL de stream via proxy
-                const streamUrl = `${AUDIUS_API}/tracks/${track.id}/stream?app_name=${APP_NAME}`;
-                const proxiedStreamUrl = PROXY_URL + encodeURIComponent(streamUrl);
-                
-                // Para streaming de áudio, precisamos usar um proxy que suporte range requests
-                // ou usar a URL direta se o navegador permitir
-                audioPlayer.src = streamUrl; // Tenta direto primeiro
-                
-                // Tocar
-                const playPromise = audioPlayer.play();
-                
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        isPlaying = true;
-                        updatePlayerUI(track);
-                        showToast(`💎 Tocando: ${track.title}`);
-                    }).catch(error => {
-                        console.error('Erro ao tocar:', error);
-                        // Se falhar por CORS, tenta com proxy (pode não funcionar para áudio)
-                        showToast('⚠️ Erro ao tocar. Tente outra música.', 'error');
-                    });
-                }
-            } catch (error) {
-                console.error('Erro playTrack:', error);
-                showToast('❌ Erro ao carregar música', 'error');
-            }
+            // Atualizar UI
+            document.querySelectorAll('.tag').forEach(tag => tag.classList.remove('active'));
+            element.classList.add('active');
+            
+            // Recarregar
+            document.getElementById('top-tracks').innerHTML = '<div class="loading"><div class="spinner"></div><p>Carregando...</p></div>';
+            loadTopTracks();
         }
 
-        function updatePlayerUI(track) {
+        function playTrack(index, source) {
+            const tracks = source === 'top-tracks' ? currentTracks : currentTracks; // Simplificado
+            const track = tracks[index];
+            
+            currentTrackIndex = index;
+            
+            document.getElementById('player-image').src = track.album.images[0]?.url || '';
+            document.getElementById('player-title').textContent = track.name;
+            document.getElementById('player-artist').textContent = track.artists.map(a => a.name).join(', ');
+            document.getElementById('play-btn').textContent = '⏸';
             document.getElementById('player').classList.add('active');
-            document.getElementById('playerTitle').textContent = track.title;
-            document.getElementById('playerArtist').textContent = track.user.name;
             
-            const imgUrl = track.artwork ? track.artwork['150x150'] : 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'150\' height=\'150\'%3E%3Crect width=\'150\' height=\'150\' fill=\'%2312121a\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' font-size=\'60\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%2300D9FF\'%3E💎%3C/text%3E%3C/svg%3E';
-            document.getElementById('playerImage').src = imgUrl;
+            isPlaying = true;
             
-            updatePlayButton();
+            // Simular progresso (preview de 30s)
+            simulateProgress(track.duration_ms > 30000 ? 30000 : track.duration_ms);
+            
+            showToast(`Tocando: ${track.name}`);
         }
 
-        function updatePlayButton() {
-            const btn = document.getElementById('playBtn');
+        function togglePlay() {
+            const btn = document.getElementById('play-btn');
+            isPlaying = !isPlaying;
             btn.textContent = isPlaying ? '⏸' : '▶';
         }
 
-        // Controles do player
-        function togglePlay() {
-            if (!currentTrack) {
-                showToast('💎 Selecione uma música primeiro', 'error');
-                return;
+        function previousTrack() {
+            if (currentTrackIndex > 0) {
+                playTrack(currentTrackIndex - 1, 'top-tracks');
             }
-            
-            if (isPlaying) {
-                audioPlayer.pause();
-                isPlaying = false;
-                showToast('⏸ Pausado');
-            } else {
-                audioPlayer.play().then(() => {
-                    isPlaying = true;
-                    showToast('▶ Tocando');
-                }).catch(error => {
-                    showToast('❌ Erro ao tocar', 'error');
-                });
-            }
-            updatePlayButton();
         }
 
         function nextTrack() {
-            if (currentPlaylist.length === 0) return;
-            currentIndex = (currentIndex + 1) % currentPlaylist.length;
-            playTrack(currentIndex, 'current');
+            if (currentTrackIndex < currentTracks.length - 1) {
+                playTrack(currentTrackIndex + 1, 'top-tracks');
+            }
         }
 
-        function previousTrack() {
-            if (currentPlaylist.length === 0) return;
-            currentIndex = (currentIndex - 1 + currentPlaylist.length) % currentPlaylist.length;
-            playTrack(currentIndex, 'current');
-        }
-
-        function updateProgress() {
-            if (!audioPlayer.duration) return;
+        function simulateProgress(duration) {
+            let progress = 0;
+            const fill = document.getElementById('progress-fill');
+            const currentTimeEl = document.getElementById('current-time');
+            const totalTimeEl = document.getElementById('total-time');
             
-            const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-            document.getElementById('progressFill').style.width = progress + '%';
-            document.getElementById('currentTime').textContent = formatTime(audioPlayer.currentTime);
+            totalTimeEl.textContent = formatDuration(duration);
+            
+            clearInterval(window.progressInterval);
+            window.progressInterval = setInterval(() => {
+                if (!isPlaying) return;
+                
+                progress += 1000;
+                const percent = (progress / duration) * 100;
+                fill.style.width = percent + '%';
+                currentTimeEl.textContent = formatDuration(progress);
+                
+                if (progress >= duration) {
+                    clearInterval(window.progressInterval);
+                    nextTrack();
+                }
+            }, 1000);
         }
 
         function seek(event) {
-            if (!audioPlayer.duration) return;
+            const bar = event.currentTarget;
+            const clickX = event.offsetX;
+            const width = bar.offsetWidth;
+            const percent = clickX / width;
             
-            const progressBar = event.currentTarget;
-            const rect = progressBar.getBoundingClientRect();
-            const clickPosition = (event.clientX - rect.left) / rect.width;
-            audioPlayer.currentTime = clickPosition * audioPlayer.duration;
+            // Simular seek
+            document.getElementById('progress-fill').style.width = (percent * 100) + '%';
         }
 
         function setVolume(value) {
-            audioPlayer.volume = value / 100;
+            // Simular volume
+            console.log('Volume:', value);
         }
 
-        // Utilitários
-        function formatTime(seconds) {
-            if (isNaN(seconds) || seconds === Infinity) return '0:00';
-            const mins = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        function formatDuration(ms) {
+            const minutes = Math.floor(ms / 60000);
+            const seconds = Math.floor((ms % 60000) / 1000);
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
         }
 
-        function formatDuration(seconds) {
-            return formatTime(seconds);
+        async function searchTracks() {
+            const query = document.getElementById('search-input').value;
+            if (!query) return;
+            
+            if (!currentToken) {
+                showToast('Conecte o Spotify primeiro!', 'error');
+                return;
+            }
+            
+            const results = await fetchSpotify(`search?q=${encodeURIComponent(query)}&type=track&limit=20`);
+            if (results && results.tracks) {
+                currentTracks = results.tracks.items;
+                displayTracks(currentTracks, 'top-tracks');
+                document.querySelector('.section-title').textContent = `Resultados: "${query}"`;
+            }
         }
 
-        function showError(containerId, message) {
-            document.getElementById(containerId).innerHTML = `
-                <div class="error">
-                    💎 ${message}<br>
-                    <small>Tente novamente mais tarde</small>
-                </div>
-            `;
+        // GERAR ARTE COM IA (Puter.js)
+        async function generateArt() {
+            if (!currentTracks || currentTracks.length === 0) {
+                showToast('Carregue suas músicas primeiro!', 'error');
+                return;
+            }
+            
+            const btn = document.querySelector('.btn-generate');
+            const resultDiv = document.getElementById('ai-result');
+            
+            btn.textContent = 'Gerando...';
+            btn.disabled = true;
+            resultDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Criando sua arte única...</p></div>';
+            
+            try {
+                // Pegar top 3 artistas para inspirar a arte
+                const artists = currentTracks.slice(0, 3).map(t => t.artists[0].name).join(', ');
+                const genres = ['pop', 'rock', 'eletrônica', 'lofi', 'jazz']; // Simplificado
+                
+                const prompt = `Arte de capa de álbum musical abstrata, estilo moderno, 
+                    inspirada por ${artists}, cores vibrantes azul e rosa neon, 
+                    atmosfera futurista e premium, diamantes e cristais, 
+                    sem texto, alta qualidade, 4k`;
+                
+                const image = await puter.ai.txt2img(prompt, {
+                    width: 1024,
+                    height: 1024
+                });
+                
+                resultDiv.innerHTML = '';
+                resultDiv.appendChild(image);
+                
+                // Adicionar botão de download
+                const downloadBtn = document.createElement('button');
+                downloadBtn.className = 'btn';
+                downloadBtn.style.marginTop = '1rem';
+                downloadBtn.textContent = '⬇️ Baixar Imagem';
+                downloadBtn.onclick = () => {
+                    const link = document.createElement('a');
+                    link.download = `diamante-arte-${Date.now()}.png`;
+                    link.href = image.src;
+                    link.click();
+                };
+                resultDiv.appendChild(downloadBtn);
+                
+                showToast('Arte gerada com sucesso! ✨');
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                resultDiv.innerHTML = '<p style="color: var(--accent);">Erro ao gerar imagem. Tente novamente.</p>';
+                showToast('Erro ao gerar arte', 'error');
+            } finally {
+                btn.textContent = '🎨 Criar Arte Musical';
+                btn.disabled = false;
+            }
         }
 
         function showToast(message, type = 'success') {
@@ -1237,16 +1251,9 @@
             }, 3000);
         }
 
-        // Atalhos de teclado
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
-                e.preventDefault();
-                togglePlay();
-            } else if (e.code === 'ArrowRight' && e.ctrlKey) {
-                nextTrack();
-            } else if (e.code === 'ArrowLeft' && e.ctrlKey) {
-                previousTrack();
-            }
+        // Enter para buscar
+        document.getElementById('search-input')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchTracks();
         });
     </script>
 </body>
