@@ -9,8 +9,9 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { background-color: #020617; color: #f8fafc; font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        .glass-card { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); }
-        .modal-bg { background: rgba(0,0,0,0.98); display: none; position: fixed; inset: 0; z-index: 100; overflow-y: auto; padding: 10px; }
+        .glass-card { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); transition: all 0.3s ease; }
+        .glass-card:hover { border-color: rgba(59, 130, 246, 0.5); transform: translateY(-2px); }
+        .modal-bg { background: rgba(0,0,0,0.95); display: none; position: fixed; inset: 0; z-index: 100; overflow-y: auto; padding: 10px; }
         
         .logo-box { 
             width: 65px; height: 65px; background: #0f172a; border-radius: 18px; 
@@ -19,14 +20,16 @@
         }
         @media (min-width: 768px) { .logo-box { width: 90px; height: 90px; } }
         
-        .prob-bar { height: 100%; transition: width 1.5s cubic-bezier(0.17, 0.67, 0.83, 0.67); }
-        .auth-input { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255,255,255,0.1); color: white; }
+        .auth-input { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255,255,255,0.1); color: white; transition: 0.3s; }
+        .auth-input:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
         ::-webkit-scrollbar { width: 0px; }
+        .loading-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <!-- LOGIN / CADASTRO SEGURO -->
+    <!-- LOGIN / CADASTRO -->
     <div id="authSection" class="min-h-[85vh] flex items-center justify-center">
         <div class="glass-card p-8 md:p-10 rounded-[40px] w-full max-w-sm shadow-2xl">
             <div class="text-center mb-8">
@@ -48,50 +51,53 @@
             <div class="flex justify-between items-end">
                 <div>
                     <h1 class="text-3xl font-black text-blue-600 italic leading-none">PRO<span class="text-white">STATS</span> AI</h1>
-                    <p class="text-slate-500 text-[9px] font-bold uppercase mt-2">Operador: <span id="userDisp" class="text-blue-400"></span></p>
+                    <p class="text-slate-500 text-[9px] font-bold uppercase mt-2">Analista: <span id="userDisp" class="text-blue-400"></span></p>
                 </div>
-                <button onclick="logout()" class="p-3 bg-red-500/10 text-red-500 rounded-xl text-[10px] font-black uppercase hover:bg-red-500/20">Sair</button>
+                <button onclick="logout()" class="p-3 bg-red-500/10 text-red-500 rounded-xl text-[10px] font-black uppercase hover:bg-red-500/20 transition-colors">Sair</button>
             </div>
-            <select id="leagueSelect" onchange="loadDashboard()" class="w-full bg-slate-900 border border-white/10 p-5 rounded-3xl text-xs font-black text-white uppercase outline-none shadow-xl">
+            <select id="leagueSelect" onchange="loadDashboard()" class="w-full bg-slate-900 border border-white/10 p-5 rounded-3xl text-xs font-black text-white uppercase outline-none shadow-xl cursor-pointer hover:bg-slate-800 transition-all">
                 <option value="BSA">🇧🇷 Brasileirão Série A</option>
                 <option value="PL" selected>🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</option>
                 <option value="CL">🇪🇺 Champions League</option>
                 <option value="PD">🇪🇸 La Liga</option>
                 <option value="BL1">🇩🇪 Bundesliga</option>
+                <option value="SA">🇮🇹 Serie A</option>
             </select>
         </header>
+        
         <div id="matchesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
     </div>
 
-    <!-- MODAL DE ANÁLISE PROFUNDA -->
+    <!-- MODAL DE ANÁLISE -->
     <div id="predictionModal" class="modal-bg" onclick="if(event.target == this) closeModal()">
-        <div class="w-full max-w-3xl mx-auto my-4">
+        <div class="w-full max-w-2xl mx-auto my-4">
             <div class="glass-card rounded-[45px] overflow-hidden relative shadow-2xl border border-white/10">
-                <button onclick="closeModal()" class="absolute top-6 right-6 z-50 w-10 h-10 flex items-center justify-center bg-black/50 text-white rounded-full"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="closeModal()" class="absolute top-6 right-6 z-50 w-10 h-10 flex items-center justify-center bg-black/50 text-white rounded-full hover:bg-red-500 transition-colors"><i class="fa-solid fa-xmark"></i></button>
 
                 <div id="modalLoading" class="p-24 text-center">
-                    <i class="fa-solid fa-atom fa-spin text-5xl text-blue-600 mb-6"></i>
-                    <p class="text-[10px] font-black uppercase text-blue-500 tracking-[0.4em]">Calculando Probabilidades Realistas...</p>
+                    <i class="fa-solid fa-circle-notch loading-spin text-5xl text-blue-600 mb-6"></i>
+                    <p class="text-[10px] font-black uppercase text-blue-500 tracking-[0.4em]">Analisando Dados Históricos...</p>
                 </div>
 
                 <div id="modalContent" class="hidden p-6 md:p-10">
-                    <!-- HEADER DOS TIMES -->
-                    <div class="bg-slate-900/50 p-6 md:p-8 rounded-[40px] border border-white/5 mb-6 text-center">
-                        <div class="flex justify-between items-center gap-2">
-                            <div class="flex-1 flex flex-col items-center">
-                                <div class="logo-box mb-3"><img id="logoH" src="" class="max-w-full max-h-full object-contain"></div>
-                                <p id="nameH" class="text-[10px] font-black uppercase text-blue-400"></p>
+                    <!-- Conteúdo do Modal (igual ao anterior, mas com busca de times corrigida) -->
+                    <div class="bg-slate-900/50 p-6 md:p-8 rounded-[40px] border border-white/5 mb-6">
+                        <div class="flex justify-between items-center gap-4">
+                            <div class="flex-1 flex flex-col items-center text-center">
+                                <div class="logo-box mb-3 shadow-lg"><img id="logoH" src="" class="max-w-full max-h-full object-contain"></div>
+                                <p id="nameH" class="text-[11px] font-black uppercase text-blue-400 leading-tight h-8 flex items-center"></p>
                             </div>
-                            <div class="px-3 py-1 bg-blue-600 text-white text-[9px] font-black rounded-full italic">POISSON XG</div>
-                            <div class="flex-1 flex flex-col items-center">
-                                <div class="logo-box mb-3"><img id="logoA" src="" class="max-w-full max-h-full object-contain"></div>
-                                <p id="nameA" class="text-[10px] font-black uppercase text-red-400"></p>
+                            <div class="text-center">
+                                <div class="px-3 py-1 bg-blue-600 text-white text-[9px] font-black rounded-full italic mb-2 uppercase">Score Predict</div>
+                                <div id="predictedScore" class="text-3xl font-black tracking-tighter text-white">0 - 0</div>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center text-center">
+                                <div class="logo-box mb-3 shadow-lg"><img id="logoA" src="" class="max-w-full max-h-full object-contain"></div>
+                                <p id="nameA" class="text-[11px] font-black uppercase text-red-400 leading-tight h-8 flex items-center"></p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- PROBABILIDADES DETALHADAS (1 X 2) -->
-                    <h3 class="text-center text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Chances de Vitória (1X2)</h3>
                     <div class="grid grid-cols-3 gap-3 mb-8">
                         <div class="bg-blue-600/10 border border-blue-600/20 p-4 rounded-3xl text-center">
                             <span class="block text-[8px] font-black text-blue-500 mb-1 uppercase">Casa</span>
@@ -107,28 +113,13 @@
                         </div>
                     </div>
 
-                    <!-- ANÁLISE IA -->
                     <div class="space-y-6">
                         <div class="bg-white/5 border-l-4 border-blue-600 p-6 rounded-3xl">
-                            <h4 id="finalCall" class="text-blue-500 text-xl font-black uppercase mb-2"></h4>
-                            <p id="aiVerdict" class="text-sm text-slate-300 leading-relaxed font-medium"></p>
+                            <h4 id="finalCall" class="text-blue-500 text-lg font-black uppercase mb-2 leading-tight"></h4>
+                            <p id="aiVerdict" class="text-sm text-slate-400 leading-relaxed font-medium"></p>
                         </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-slate-900/80 p-5 rounded-3xl border border-white/5">
-                                <span class="text-[8px] font-black text-blue-400 uppercase tracking-widest block mb-2">Mercado de Gols</span>
-                                <div id="goalStats" class="space-y-2"></div>
-                            </div>
-                            <div class="bg-slate-900/80 p-5 rounded-3xl border border-white/5">
-                                <span class="text-[8px] font-black text-blue-400 uppercase tracking-widest block mb-2">Nível de Confiança IA</span>
-                                <div class="w-full bg-black h-4 rounded-full mt-2 overflow-hidden border border-white/10">
-                                    <div id="confidenceBar" class="h-full bg-gradient-to-r from-blue-600 to-blue-400" style="width: 0%"></div>
-                                </div>
-                            </div>
-                        </div>
+                        <div id="goalStats" class="bg-slate-900/80 p-5 rounded-3xl border border-white/5"></div>
                     </div>
-
-                    <button onclick="closeModal()" class="w-full mt-8 py-4 bg-slate-800 rounded-3xl text-[9px] font-black uppercase text-slate-500 tracking-widest">Fechar Relatório</button>
                 </div>
             </div>
         </div>
@@ -141,7 +132,9 @@
         let leagueAvgGoals = 1.35;
         let isLoginMode = true;
 
-        // AUTH SEGURO
+        function factorial(n) { return (n <= 1) ? 1 : n * factorial(n - 1); }
+        function getPoisson(k, lambda) { return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k); }
+
         function toggleAuthMode() {
             isLoginMode = !isLoginMode;
             document.getElementById('authTitle').innerText = isLoginMode ? "Terminal de Inteligência" : "Criar Nova Conta";
@@ -152,7 +145,6 @@
             const email = document.getElementById('userEmail').value.trim();
             const pass = document.getElementById('userPass').value.trim();
             if(!email || !pass) return alert("Preencha todos os campos!");
-
             if(!isLoginMode) {
                 localStorage.setItem(`u_${email}`, pass);
                 alert("Conta criada!"); toggleAuthMode();
@@ -160,109 +152,129 @@
                 if(localStorage.getItem(`u_${email}`) === pass) {
                     localStorage.setItem('logged', 'true'); localStorage.setItem('user', email);
                     checkSession();
-                } else alert("Credenciais inválidas!");
+                } else alert("Dados incorretos!");
             }
         }
 
         function logout() { localStorage.clear(); location.reload(); }
+        
         function checkSession() {
             if(localStorage.getItem('logged')) {
                 document.getElementById('authSection').classList.add('hidden');
                 document.getElementById('dashboardSection').classList.remove('hidden');
-                document.getElementById('userDisp').innerText = localStorage.getItem('user');
+                document.getElementById('userDisp').innerText = localStorage.getItem('user').split('@')[0];
                 loadDashboard();
             }
         }
 
-        // CARREGAMENTO DE DADOS
+        // --- CORREÇÃO DA CHAMPIONS LEAGUE ---
         async function loadDashboard() {
+            const grid = document.getElementById('matchesGrid');
+            grid.innerHTML = `<div class="col-span-full py-20 text-center"><i class="fa-solid fa-circle-notch loading-spin text-3xl text-blue-600"></i></div>`;
+            
             const league = document.getElementById('leagueSelect').value;
             try {
+                // Busca classificação
                 const resS = await fetch(`${PROXY}https://api.football-data.org/v4/competitions/${league}/standings`, { headers: { 'X-Auth-Token': API_KEY }});
                 const dataS = await resS.json();
-                currentStandings = dataS.standings[0].table;
+                
+                // LÓGICA CORRIGIDA: Achata todos os grupos em uma única lista
+                currentStandings = [];
+                if (dataS.standings) {
+                    dataS.standings.forEach(section => {
+                        if (section.table) {
+                            currentStandings.push(...section.table);
+                        }
+                    });
+                }
+
+                // Cálculo de média de gols da liga (usando a lista achatada)
                 let g = 0, j = 0;
                 currentStandings.forEach(t => { g += t.goalsFor; j += t.playedGames; });
                 leagueAvgGoals = (g / j) || 1.35;
 
+                // Busca partidas
                 const resM = await fetch(`${PROXY}https://api.football-data.org/v4/competitions/${league}/matches?status=SCHEDULED`, { headers: { 'X-Auth-Token': API_KEY }});
                 const dataM = await resM.json();
                 renderMatches(dataM.matches);
-            } catch (e) { alert("Limite de API atingido. Aguarde 60 segundos."); }
+            } catch (e) { 
+                grid.innerHTML = `<div class="col-span-full p-10 glass-card text-center text-red-400 text-xs font-black uppercase">Erro ao carregar dados. Verifique a conexão ou limite da API.</div>`;
+            }
         }
 
         function renderMatches(matches) {
             const grid = document.getElementById('matchesGrid');
-            grid.innerHTML = matches.slice(0, 12).map(m => `
-                <div onclick="predictMatch(${m.homeTeam.id}, ${m.awayTeam.id})" class="glass-card p-6 rounded-[35px] flex justify-between items-center active:scale-95 transition-all cursor-pointer border border-white/5">
-                    <div class="flex flex-col gap-3 min-w-0">
-                        <div class="flex items-center gap-3"><img src="${m.homeTeam.crest}" class="w-5 h-5 object-contain"><span class="text-xs font-black text-slate-200 truncate uppercase">${m.homeTeam.shortName}</span></div>
-                        <div class="flex items-center gap-3"><img src="${m.awayTeam.crest}" class="w-5 h-5 object-contain"><span class="text-xs font-black text-slate-200 truncate uppercase">${m.awayTeam.shortName}</span></div>
+            if(!matches || matches.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-10 text-center text-slate-500 uppercase text-[10px] font-black">Sem jogos agendados no momento.</div>`;
+                return;
+            }
+
+            grid.innerHTML = matches.slice(0, 18).map(m => {
+                const date = new Date(m.utcDate).toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
+                const time = new Date(m.utcDate).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+                
+                return `
+                <div onclick="predictMatch(${m.homeTeam.id}, ${m.awayTeam.id})" class="glass-card p-5 rounded-[30px] flex justify-between items-center cursor-pointer group">
+                    <div class="flex flex-col gap-2 flex-1 min-w-0">
+                        <div class="flex items-center gap-3">
+                            <img src="${m.homeTeam.crest}" class="w-5 h-5 object-contain">
+                            <span class="text-[11px] font-black text-slate-200 truncate uppercase">${m.homeTeam.shortName || m.homeTeam.name}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <img src="${m.awayTeam.crest}" class="w-5 h-5 object-contain">
+                            <span class="text-[11px] font-black text-slate-200 truncate uppercase">${m.awayTeam.shortName || m.awayTeam.name}</span>
+                        </div>
                     </div>
-                    <div class="bg-blue-600/10 text-blue-500 p-4 rounded-2xl"><i class="fa-solid fa-chart-pie"></i></div>
+                    <div class="flex flex-col items-end ml-4">
+                        <span class="text-[8px] font-black text-blue-500 uppercase">${date}</span>
+                        <span class="text-[10px] font-black text-slate-500">${time}</span>
+                    </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
-        // MOTOR DE ANÁLISE IA
         function predictMatch(hId, aId) {
+            // A busca agora funciona para qualquer time de qualquer grupo
             const h = currentStandings.find(t => t.team.id === hId);
             const a = currentStandings.find(t => t.team.id === aId);
-            if(!h || !a) return;
+            
+            if(!h || !a) {
+                alert("Dados insuficientes para este time na fase atual.");
+                return;
+            }
 
             document.getElementById('predictionModal').style.display = 'block';
             document.getElementById('modalLoading').classList.remove('hidden');
             document.getElementById('modalContent').classList.add('hidden');
 
             setTimeout(() => {
-                const xGH = ((h.goalsFor / h.playedGames) / leagueAvgGoals) * ((a.goalsAgainst / a.playedGames) / leagueAvgGoals) * leagueAvgGoals * 1.15;
+                const xGH = ((h.goalsFor / h.playedGames) / leagueAvgGoals) * ((a.goalsAgainst / a.playedGames) / leagueAvgGoals) * leagueAvgGoals * 1.10;
                 const xGA = ((a.goalsFor / a.playedGames) / leagueAvgGoals) * ((h.goalsAgainst / h.playedGames) / leagueAvgGoals) * leagueAvgGoals;
 
-                let pH = (xGH / (xGH + xGA)) * 100;
-                let pA = (xGA / (xGH + xGA)) * 100;
-                let pD = Math.max(15, 30 - Math.abs(xGH - xGA) * 10);
-                let sum = pH + pA + pD;
-                pH = (pH/sum)*100; pD = (pD/sum)*100; pA = (pA/sum)*100;
-
-                // PREENCHIMENTO DA UI
-                document.getElementById('logoH').src = h.team.crest;
-                document.getElementById('logoA').src = a.team.crest;
-                document.getElementById('nameH').innerText = h.team.shortName;
-                document.getElementById('nameA').innerText = a.team.shortName;
-
-                document.getElementById('winPercH').innerText = Math.round(pH) + "%";
-                document.getElementById('winPercD').innerText = Math.round(pD) + "%";
-                document.getElementById('winPercA').innerText = Math.round(pA) + "%";
-
-                let confidence = Math.max(pH, pA);
-                document.getElementById('confidenceBar').style.width = confidence + "%";
-
-                // Lógica de Veredito
-                let verdict = "";
-                let title = "";
-                if(pH > 50) {
-                    title = `${h.team.shortName} é o favorito.`;
-                    verdict = `Com ${Math.round(pH)}% de chance de vitória, o mandante tem uma vantagem tática clara baseada no xG de ${xGH.toFixed(1)}. A defesa do visitante sofre ${(a.goalsAgainst/a.playedGames).toFixed(1)} gols por jogo, facilitando o ataque do ${h.team.shortName}.`;
-                } else if (pA > 45) {
-                    title = `${a.team.shortName} tem vantagem.`;
-                    verdict = `O time visitante possui um volume de jogo superior, com ${Math.round(pA)}% de probabilidade de vitória. Esperamos que explorem os contra-ataques contra a defesa do mandante que é vulnerável.`;
-                } else {
-                    title = "Equilíbrio absoluto.";
-                    verdict = `As chances estão divididas (${Math.round(pH)}% vs ${Math.round(pA)}%). O modelo Poisson sugere um jogo decidido no detalhe ou um empate técnico, com xG projetado de ${xGH.toFixed(1)} a ${xGA.toFixed(1)}.`;
+                let pH = 0, pD = 0, pA = 0, maxP = 0, score = "0 - 0";
+                for (let i = 0; i <= 5; i++) {
+                    for (let j = 0; j <= 5; j++) {
+                        let prob = getPoisson(i, xGH) * getPoisson(j, xGA);
+                        if (i > j) pH += prob; else if (i === j) pD += prob; else pA += prob;
+                        if (prob > maxP) { maxP = prob; score = `${i} - ${j}`; }
+                    }
                 }
 
-                document.getElementById('finalCall').innerText = title;
-                document.getElementById('aiVerdict').innerText = verdict;
-
-                const over25 = Math.min(95, Math.round((xGH + xGA) * 25));
-                document.getElementById('goalStats').innerHTML = `
-                    <div class="flex justify-between text-[10px] text-slate-300"><span>Over 2.5 Gols</span><span>${over25}%</span></div>
-                    <div class="flex justify-between text-[10px] text-slate-300"><span>Ambas Marcam</span><span>${Math.min(90, Math.round(over25*0.9))}%</span></div>
-                `;
+                document.getElementById('logoH').src = h.team.crest;
+                document.getElementById('logoA').src = a.team.crest;
+                document.getElementById('nameH').innerText = h.team.shortName || h.team.name;
+                document.getElementById('nameA').innerText = a.team.shortName || a.team.name;
+                document.getElementById('predictedScore').innerText = score;
+                document.getElementById('winPercH').innerText = Math.round(pH*100) + "%";
+                document.getElementById('winPercD').innerText = Math.round(pD*100) + "%";
+                document.getElementById('winPercA').innerText = Math.round(pA*100) + "%";
+                
+                document.getElementById('finalCall').innerText = pH > pA ? `Favoritismo: ${h.team.shortName}` : `Favoritismo: ${a.team.shortName}`;
+                document.getElementById('aiVerdict').innerText = `Análise baseada em xG projetado de ${xGH.toFixed(1)} vs ${xGA.toFixed(1)}. O modelo Poisson sugere ${score} como resultado mais provável.`;
 
                 document.getElementById('modalLoading').classList.add('hidden');
                 document.getElementById('modalContent').classList.remove('hidden');
-            }, 1000);
+            }, 600);
         }
 
         function closeModal() { document.getElementById('predictionModal').style.display = 'none'; }
