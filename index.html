@@ -3,122 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PROSTATS AI | Expert Analytics</title>
+    <title>PROSTATS APEX | Inteligência Quantitativa</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { background-color: #020617; color: #f8fafc; font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        .glass-card { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); transition: all 0.3s ease; }
-        .glass-card:hover { border-color: rgba(59, 130, 246, 0.5); transform: translateY(-2px); }
-        .modal-bg { background: rgba(0,0,0,0.95); display: none; position: fixed; inset: 0; z-index: 100; overflow-y: auto; padding: 10px; }
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;700;900&display=swap');
         
-        .logo-box { 
-            width: 65px; height: 65px; background: #0f172a; border-radius: 18px; 
-            padding: 10px; display: flex; align-items: center; justify-content: center;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        @media (min-width: 768px) { .logo-box { width: 90px; height: 90px; } }
+        :root { --neon: #22d3ee; --dark-bg: #020617; }
+        body { background: var(--dark-bg); color: #cbd5e1; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
         
-        .auth-input { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255,255,255,0.1); color: white; transition: 0.3s; }
-        .auth-input:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
-        ::-webkit-scrollbar { width: 0px; }
-        .loading-spin { animation: spin 1s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(34, 211, 238, 0.1); }
+        .input-neural { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white; transition: 0.3s; }
+        .input-neural:focus { border-color: var(--neon); box-shadow: 0 0 15px rgba(34, 211, 238, 0.2); outline: none; }
+        
+        .scanline { position: absolute; inset: 0; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%); background-size: 100% 4px; pointer-events: none; opacity: 0.3; }
+        .heatmap-cell { aspect-ratio: 1; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: bold; font-family: 'JetBrains Mono'; }
+        
+        .btn-neon { background: transparent; border: 1px solid var(--neon); color: var(--neon); transition: 0.4s; cursor: pointer; }
+        .btn-neon:hover { background: var(--neon); color: black; box-shadow: 0 0 20px var(--neon); }
+
+        .date-badge { font-size: 9px; padding: 2px 8px; border-radius: 4px; font-weight: 800; border: 1px solid; text-transform: uppercase; }
+        .badge-today { background: rgba(34, 211, 238, 0.1); color: var(--neon); border-color: rgba(34, 211, 238, 0.4); }
+        .badge-tomorrow { background: rgba(251, 191, 36, 0.1); color: #fbbf24; border-color: rgba(251, 191, 36, 0.4); }
+        .badge-future { background: rgba(255, 255, 255, 0.05); color: #94a3b8; border-color: rgba(255, 255, 255, 0.1); }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--neon); border-radius: 10px; }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="min-h-screen">
 
-    <!-- LOGIN / CADASTRO -->
-    <div id="authSection" class="min-h-[85vh] flex items-center justify-center">
-        <div class="glass-card p-8 md:p-10 rounded-[40px] w-full max-w-sm shadow-2xl">
-            <div class="text-center mb-8">
-                <h1 class="text-4xl font-black text-blue-600 italic tracking-tighter uppercase">Pro<span class="text-white">Stats</span></h1>
-                <p id="authTitle" class="text-slate-500 text-[9px] font-black mt-2 uppercase tracking-[0.4em]">Terminal de Inteligência</p>
+    <!-- AUTENTICAÇÃO -->
+    <div id="authSection" class="fixed inset-0 z-[9999] bg-slate-950 flex items-center justify-center p-4">
+        <div class="glass w-full max-w-md p-8 rounded-[32px] relative overflow-hidden">
+            <div class="scanline"></div>
+            <div class="text-center mb-10">
+                <h1 class="text-4xl font-black italic tracking-tighter text-white uppercase">Pro<span class="text-cyan-400">Stats</span></h1>
+                <p id="authSubtitle" class="mono text-[10px] text-cyan-400/60 uppercase tracking-[0.4em] mt-2">Acesso ao Terminal</p>
             </div>
+
             <div class="space-y-4">
-                <input type="email" id="userEmail" class="auth-input w-full p-4 rounded-2xl text-sm font-bold" placeholder="E-mail">
-                <input type="password" id="userPass" class="auth-input w-full p-4 rounded-2xl text-sm font-bold" placeholder="Senha">
-                <button onclick="handleAuth()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-black text-xs text-white uppercase tracking-widest shadow-xl transition-all">Acessar Sistema</button>
-                <button onclick="toggleAuthMode()" id="authToggleBtn" class="w-full text-[9px] font-black uppercase text-slate-500 hover:text-blue-400">Não possui conta? Registre-se</button>
+                <div id="registerFields" class="hidden space-y-4">
+                    <label class="text-[10px] mono text-slate-500 ml-1 uppercase">Nome de Operador</label>
+                    <input type="text" id="regName" class="input-neural w-full p-4 rounded-xl text-xs font-bold" placeholder="EX: ANA COSTA">
+                </div>
+                
+                <div class="space-y-1">
+                    <label class="text-[10px] mono text-slate-500 ml-1 uppercase">E-mail</label>
+                    <input type="email" id="authEmail" class="input-neural w-full p-4 rounded-xl text-xs font-bold" placeholder="seu@email.com">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[10px] mono text-slate-500 ml-1 uppercase">Senha</label>
+                    <input type="password" id="authPass" class="input-neural w-full p-4 rounded-xl text-xs font-bold" placeholder="••••••••">
+                </div>
+                
+                <button onclick="handleAuth()" id="mainBtn" class="btn-neon w-full py-4 rounded-xl font-black text-xs uppercase tracking-widest mt-4">
+                    Acessar Terminal
+                </button>
+                
+                <p onclick="toggleAuth()" id="toggleText" class="text-center text-[10px] mono text-slate-500 hover:text-cyan-400 cursor-pointer uppercase tracking-widest mt-6">
+                    Novo operador? Criar conta
+                </p>
             </div>
         </div>
     </div>
 
-    <!-- DASHBOARD PRINCIPAL -->
-    <div id="dashboardSection" class="hidden max-w-6xl mx-auto">
-        <header class="mb-10 flex flex-col gap-6">
-            <div class="flex justify-between items-end">
-                <div>
-                    <h1 class="text-3xl font-black text-blue-600 italic leading-none">PRO<span class="text-white">STATS</span> AI</h1>
-                    <p class="text-slate-500 text-[9px] font-bold uppercase mt-2">Analista: <span id="userDisp" class="text-blue-400"></span></p>
-                </div>
-                <button onclick="logout()" class="p-3 bg-red-500/10 text-red-500 rounded-xl text-[10px] font-black uppercase hover:bg-red-500/20 transition-colors">Sair</button>
+    <!-- DASHBOARD -->
+    <div id="appContainer" class="hidden">
+        <header class="max-w-7xl mx-auto p-6 md:p-10 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div>
+                <h2 class="text-2xl font-black text-white italic uppercase tracking-tighter">ProStats <span class="text-cyan-400">Apex</span></h2>
+                <p class="text-[10px] text-slate-500 mono uppercase">Sessão Ativa: <span id="userNameDisp" class="text-white">---</span></p>
             </div>
-            <select id="leagueSelect" onchange="loadDashboard()" class="w-full bg-slate-900 border border-white/10 p-5 rounded-3xl text-xs font-black text-white uppercase outline-none shadow-xl cursor-pointer hover:bg-slate-800 transition-all">
-                <option value="BSA">🇧🇷 Brasileirão Série A</option>
-                <option value="PL" selected>🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</option>
-                <option value="CL">🇪🇺 Champions League</option>
-                <option value="PD">🇪🇸 La Liga</option>
-                <option value="BL1">🇩🇪 Bundesliga</option>
-                <option value="SA">🇮🇹 Serie A</option>
-            </select>
+
+            <div class="flex gap-4 w-full md:w-auto">
+                <select id="leagueSelect" onchange="fetchMatches()" class="bg-slate-900 border border-cyan-400/20 p-4 rounded-xl text-xs font-bold text-white mono outline-none flex-1">
+                    <option value="PL" selected>🏴󠁧󠁢󠁥󠁮󠁧󠁿 PREMIER LEAGUE</option>
+                    <option value="BSA">🇧🇷 BRASILEIRÃO A</option>
+                    <option value="CL">🇪🇺 CHAMPIONS LEAGUE</option>
+                    <option value="PD">🇪🇸 LA LIGA</option>
+                    <option value="SA">🇮🇹 SERIE A</option>
+                </select>
+                <button onclick="logout()" class="p-4 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 transition-all">
+                    <i class="fa-solid fa-power-off"></i>
+                </button>
+            </div>
         </header>
-        
-        <div id="matchesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+        <main id="grid" class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-20"></main>
     </div>
 
     <!-- MODAL DE ANÁLISE -->
-    <div id="predictionModal" class="modal-bg" onclick="if(event.target == this) closeModal()">
-        <div class="w-full max-w-2xl mx-auto my-4">
-            <div class="glass-card rounded-[45px] overflow-hidden relative shadow-2xl border border-white/10">
-                <button onclick="closeModal()" class="absolute top-6 right-6 z-50 w-10 h-10 flex items-center justify-center bg-black/50 text-white rounded-full hover:bg-red-500 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+    <div id="modal" class="fixed inset-0 z-[10000] bg-black/95 hidden overflow-y-auto p-4 backdrop-blur-md">
+        <div class="max-w-5xl mx-auto bg-slate-950 border border-cyan-400/30 rounded-[40px] overflow-hidden relative shadow-2xl my-8">
+            <div class="scanline"></div>
+            
+            <div class="bg-cyan-400/5 p-6 border-b border-cyan-400/20 flex justify-between items-center">
+                <span id="modalDateInfo" class="mono text-[10px] text-cyan-400 font-bold uppercase tracking-widest">Calculando...</span>
+                <button onclick="closeModal()" class="text-slate-500 hover:text-white text-2xl transition-colors">&times;</button>
+            </div>
 
-                <div id="modalLoading" class="p-24 text-center">
-                    <i class="fa-solid fa-circle-notch loading-spin text-5xl text-blue-600 mb-6"></i>
-                    <p class="text-[10px] font-black uppercase text-blue-500 tracking-[0.4em]">Analisando Dados Históricos...</p>
+            <div id="loading" class="p-24 text-center">
+                <div class="w-12 h-12 border-2 border-cyan-400/20 border-t-cyan-400 rounded-full animate-spin mx-auto mb-6"></div>
+                <p class="mono text-[10px] text-cyan-400 animate-pulse uppercase">Executando Algoritmo Poisson...</p>
+            </div>
+
+            <div id="content" class="p-8 md:p-12 hidden">
+                <!-- Confronto Principal -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-10 items-center mb-16">
+                    <div class="text-center">
+                        <img id="hLogo" class="w-20 h-20 mx-auto mb-4 object-contain">
+                        <h4 id="hName" class="text-sm font-black uppercase text-white"></h4>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-[9px] mono text-slate-500 mb-2 uppercase tracking-widest">Placar Previsto</div>
+                        <div id="pScore" class="text-8xl font-black italic text-white tracking-tighter"></div>
+                        <div id="pConf" class="mt-4 text-[10px] font-black text-cyan-400 mono uppercase"></div>
+                    </div>
+                    <div class="text-center">
+                        <img id="aLogo" class="w-20 h-20 mx-auto mb-4 object-contain">
+                        <h4 id="aName" class="text-sm font-black uppercase text-white"></h4>
+                    </div>
                 </div>
 
-                <div id="modalContent" class="hidden p-6 md:p-10">
-                    <!-- Conteúdo do Modal (igual ao anterior, mas com busca de times corrigida) -->
-                    <div class="bg-slate-900/50 p-6 md:p-8 rounded-[40px] border border-white/5 mb-6">
-                        <div class="flex justify-between items-center gap-4">
-                            <div class="flex-1 flex flex-col items-center text-center">
-                                <div class="logo-box mb-3 shadow-lg"><img id="logoH" src="" class="max-w-full max-h-full object-contain"></div>
-                                <p id="nameH" class="text-[11px] font-black uppercase text-blue-400 leading-tight h-8 flex items-center"></p>
+                <!-- Detalhes Técnicos -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <div class="bg-white/5 p-8 rounded-3xl border border-white/5">
+                        <h5 class="mono text-[10px] text-slate-500 uppercase mb-6 tracking-widest">Matriz de Probabilidades</h5>
+                        <div id="heatmap" class="grid grid-cols-6 gap-1 mb-8"></div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-[10px] mono mb-1"><span>VITÓRIA MANDANTE</span><span id="winH"></span></div>
+                                <div class="h-1 bg-white/5 rounded-full overflow-hidden"><div id="barH" class="h-full bg-cyan-400 transition-all duration-1000"></div></div>
                             </div>
-                            <div class="text-center">
-                                <div class="px-3 py-1 bg-blue-600 text-white text-[9px] font-black rounded-full italic mb-2 uppercase">Score Predict</div>
-                                <div id="predictedScore" class="text-3xl font-black tracking-tighter text-white">0 - 0</div>
+                            <div>
+                                <div class="flex justify-between text-[10px] mono mb-1"><span>EMPATE</span><span id="winD"></span></div>
+                                <div class="h-1 bg-white/5 rounded-full overflow-hidden"><div id="barD" class="h-full bg-slate-500 transition-all duration-1000"></div></div>
                             </div>
-                            <div class="flex-1 flex flex-col items-center text-center">
-                                <div class="logo-box mb-3 shadow-lg"><img id="logoA" src="" class="max-w-full max-h-full object-contain"></div>
-                                <p id="nameA" class="text-[11px] font-black uppercase text-red-400 leading-tight h-8 flex items-center"></p>
+                            <div>
+                                <div class="flex justify-between text-[10px] mono mb-1"><span>VITÓRIA VISITANTE</span><span id="winA"></span></div>
+                                <div class="h-1 bg-white/5 rounded-full overflow-hidden"><div id="barA" class="h-full bg-pink-500 transition-all duration-1000"></div></div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-3 mb-8">
-                        <div class="bg-blue-600/10 border border-blue-600/20 p-4 rounded-3xl text-center">
-                            <span class="block text-[8px] font-black text-blue-500 mb-1 uppercase">Casa</span>
-                            <span id="winPercH" class="text-2xl font-black text-white"></span>
-                        </div>
-                        <div class="bg-slate-800/40 border border-white/5 p-4 rounded-3xl text-center">
-                            <span class="block text-[8px] font-black text-slate-400 mb-1 uppercase">Empate</span>
-                            <span id="winPercD" class="text-2xl font-black text-white"></span>
-                        </div>
-                        <div class="bg-red-600/10 border border-red-600/20 p-4 rounded-3xl text-center">
-                            <span class="block text-[8px] font-black text-red-500 mb-1 uppercase">Fora</span>
-                            <span id="winPercA" class="text-2xl font-black text-white"></span>
                         </div>
                     </div>
 
                     <div class="space-y-6">
-                        <div class="bg-white/5 border-l-4 border-blue-600 p-6 rounded-3xl">
-                            <h4 id="finalCall" class="text-blue-500 text-lg font-black uppercase mb-2 leading-tight"></h4>
-                            <p id="aiVerdict" class="text-sm text-slate-400 leading-relaxed font-medium"></p>
+                        <div class="bg-cyan-400/5 p-6 rounded-3xl border border-cyan-400/20">
+                            <span class="mono text-[9px] text-cyan-400 font-bold uppercase">Relatório Neural</span>
+                            <p id="verdict" class="text-sm text-slate-300 leading-relaxed mt-2 italic"></p>
                         </div>
-                        <div id="goalStats" class="bg-slate-900/80 p-5 rounded-3xl border border-white/5"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white/5 p-6 rounded-3xl border border-white/5">
+                                <span class="mono text-[9px] text-slate-500 uppercase">Handicap Proj.</span>
+                                <div id="mHand" class="text-2xl font-black italic text-white"></div>
+                            </div>
+                            <div class="bg-white/5 p-6 rounded-3xl border border-white/5">
+                                <span class="mono text-[9px] text-slate-500 uppercase">Chance Over 2.5</span>
+                                <div id="mOver" class="text-2xl font-black italic text-white"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -128,157 +174,197 @@
     <script>
         const API_KEY = '8e3c0eba984c46a090a5c53c37835285';
         const PROXY = "https://corsproxy.io/?";
-        let currentStandings = [];
-        let leagueAvgGoals = 1.35;
-        let isLoginMode = true;
+        let engine = { hData: [], aData: [], avg: 0 };
+        let loginMode = true;
 
-        function factorial(n) { return (n <= 1) ? 1 : n * factorial(n - 1); }
-        function getPoisson(k, lambda) { return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k); }
-
-        function toggleAuthMode() {
-            isLoginMode = !isLoginMode;
-            document.getElementById('authTitle').innerText = isLoginMode ? "Terminal de Inteligência" : "Criar Nova Conta";
-            document.getElementById('authToggleBtn').innerText = isLoginMode ? "Não possui conta? Registre-se" : "Já tem conta? Login";
+        // AUTH SYSTEM
+        function toggleAuth() {
+            loginMode = !loginMode;
+            document.getElementById('authSubtitle').innerText = loginMode ? "Acesso ao Terminal" : "Novo Cadastro";
+            document.getElementById('registerFields').classList.toggle('hidden');
+            document.getElementById('mainBtn').innerText = loginMode ? "Entrar no Terminal" : "Finalizar Cadastro";
+            document.getElementById('toggleText').innerText = loginMode ? "Novo operador? Criar conta" : "Já tem conta? Entrar";
         }
 
         function handleAuth() {
-            const email = document.getElementById('userEmail').value.trim();
-            const pass = document.getElementById('userPass').value.trim();
-            if(!email || !pass) return alert("Preencha todos os campos!");
-            if(!isLoginMode) {
-                localStorage.setItem(`u_${email}`, pass);
-                alert("Conta criada!"); toggleAuthMode();
+            const email = document.getElementById('authEmail').value;
+            const pass = document.getElementById('authPass').value;
+            if(!email || !pass) return alert("Preencha os campos.");
+
+            if(!loginMode) {
+                const name = document.getElementById('regName').value;
+                if(!name) return alert("Preencha o seu nome.");
+                localStorage.setItem(`user_${email}`, JSON.stringify({ name, pass }));
+                alert("Cadastro realizado!"); toggleAuth();
             } else {
-                if(localStorage.getItem(`u_${email}`) === pass) {
-                    localStorage.setItem('logged', 'true'); localStorage.setItem('user', email);
+                const stored = JSON.parse(localStorage.getItem(`user_${email}`));
+                if(stored && stored.pass === pass) {
+                    localStorage.setItem('session', email);
                     checkSession();
-                } else alert("Dados incorretos!");
+                } else alert("Credenciais inválidas.");
             }
         }
 
-        function logout() { localStorage.clear(); location.reload(); }
-        
         function checkSession() {
-            if(localStorage.getItem('logged')) {
+            const sessionEmail = localStorage.getItem('session');
+            if(sessionEmail) {
+                const user = JSON.parse(localStorage.getItem(`user_${sessionEmail}`));
                 document.getElementById('authSection').classList.add('hidden');
-                document.getElementById('dashboardSection').classList.remove('hidden');
-                document.getElementById('userDisp').innerText = localStorage.getItem('user').split('@')[0];
-                loadDashboard();
+                document.getElementById('appContainer').classList.remove('hidden');
+                document.getElementById('userNameDisp').innerText = user.name;
+                fetchMatches();
             }
         }
 
-        // --- CORREÇÃO DA CHAMPIONS LEAGUE ---
-        async function loadDashboard() {
-            const grid = document.getElementById('matchesGrid');
-            grid.innerHTML = `<div class="col-span-full py-20 text-center"><i class="fa-solid fa-circle-notch loading-spin text-3xl text-blue-600"></i></div>`;
-            
+        function logout() { localStorage.removeItem('session'); location.reload(); }
+
+        // DATE UTILS
+        function getBadgeDate(utcDate) {
+            const matchDate = new Date(utcDate);
+            const now = new Date();
+            const tomorrow = new Date();
+            tomorrow.setDate(now.getDate() + 1);
+            const time = matchDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+            if (matchDate.toDateString() === now.toDateString()) {
+                return { html: `<span class="date-badge badge-today">HOJE - ${time}</span>`, label: `HOJE às ${time}` };
+            } else if (matchDate.toDateString() === tomorrow.toDateString()) {
+                return { html: `<span class="date-badge badge-tomorrow">AMANHÃ - ${time}</span>`, label: `AMANHÃ às ${time}` };
+            } else {
+                const dateStr = matchDate.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                return { html: `<span class="date-badge badge-future">${dateStr} - ${time}</span>`, label: `${dateStr} às ${time}` };
+            }
+        }
+
+        // DATA FETCHING
+        async function fetchMatches() {
             const league = document.getElementById('leagueSelect').value;
+            const grid = document.getElementById('grid');
+            grid.innerHTML = `<div class="col-span-full py-40 text-center mono text-cyan-400 animate-pulse uppercase tracking-[0.4em]">Sincronizando Datacenter...</div>`;
+
             try {
-                // Busca classificação
-                const resS = await fetch(`${PROXY}https://api.football-data.org/v4/competitions/${league}/standings`, { headers: { 'X-Auth-Token': API_KEY }});
-                const dataS = await resS.json();
+                const [resH, resA, resM] = await Promise.all([
+                    fetch(`${PROXY}https://api.football-data.org/v4/competitions/${league}/standings?type=HOME`, { headers: { 'X-Auth-Token': API_KEY }}),
+                    fetch(`${PROXY}https://api.football-data.org/v4/competitions/${league}/standings?type=AWAY`, { headers: { 'X-Auth-Token': API_KEY }}),
+                    fetch(`${PROXY}https://api.football-data.org/v4/competitions/${league}/matches?status=SCHEDULED`, { headers: { 'X-Auth-Token': API_KEY }})
+                ]);
+
+                const hD = await resH.json();
+                const aD = await resA.json();
+                const mD = await resM.json();
+
+                engine.hData = hD.standings[0].table;
+                engine.aData = aD.standings[0].table;
                 
-                // LÓGICA CORRIGIDA: Achata todos os grupos em uma única lista
-                currentStandings = [];
-                if (dataS.standings) {
-                    dataS.standings.forEach(section => {
-                        if (section.table) {
-                            currentStandings.push(...section.table);
-                        }
-                    });
+                let tg = 0, tj = 0;
+                engine.hData.forEach(t => { tg += t.goalsFor; tj += t.playedGames; });
+                engine.avg = tg / tj;
+
+                grid.innerHTML = mD.matches.slice(0, 16).map(m => {
+                    const badge = getBadgeDate(m.utcDate);
+                    return `
+                    <div onclick="analyze(${m.homeTeam.id}, ${m.awayTeam.id}, '${m.utcDate}')" class="glass p-6 rounded-[32px] cursor-pointer hover:border-cyan-400/50 transition-all group relative overflow-hidden">
+                        <div class="mb-5">${badge.html}</div>
+                        <div class="flex flex-col gap-4">
+                            <div class="flex items-center gap-4">
+                                <img src="${m.homeTeam.crest}" class="w-7 h-7 object-contain">
+                                <span class="font-bold text-xs uppercase text-slate-300 group-hover:text-white">${m.homeTeam.shortName}</span>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <img src="${m.awayTeam.crest}" class="w-7 h-7 object-contain">
+                                <span class="font-bold text-xs uppercase text-slate-300 group-hover:text-white">${m.awayTeam.shortName}</span>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch (e) {
+                grid.innerHTML = `<div class="col-span-full text-center p-20 mono text-red-500">ERRO DE CONEXÃO: LIMITE DE API EXCEDIDO</div>`;
+            }
+        }
+
+        // MATH ENGINE
+        function factorial(n) { return (n <= 1) ? 1 : n * factorial(n - 1); }
+        function poisson(k, lambda) { return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k); }
+
+        async function analyze(hId, aId, utcDate) {
+            const h = engine.hData.find(t => t.team.id === hId);
+            const a = engine.aData.find(t => t.team.id === aId);
+            if(!h || !a) return alert("Dados insuficientes para este confronto.");
+
+            const modal = document.getElementById('modal');
+            modal.style.display = 'block';
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('content').classList.add('hidden');
+            document.getElementById('modalDateInfo').innerText = getBadgeDate(utcDate).label;
+
+            // Simular processamento neural
+            await new Promise(r => setTimeout(r, 1000));
+
+            // Poisson Calculation
+            const hAtk = (h.goalsFor / h.playedGames) / engine.avg;
+            const hDef = (h.goalsAgainst / h.playedGames) / engine.avg;
+            const aAtk = (a.goalsFor / a.playedGames) / engine.avg;
+            const aDef = (a.goalsAgainst / a.playedGames) / engine.avg;
+
+            const xGH = hAtk * aDef * engine.avg * 1.15; // +15% Home Advantage
+            const xGA = aAtk * hDef * engine.avg;
+
+            let probH = 0, probD = 0, probA = 0, over25 = 0, maxP = 0, bestS = "";
+            const hMap = document.getElementById('heatmap');
+            hMap.innerHTML = '';
+
+            for(let i=0; i<6; i++) {
+                for(let j=0; j<6; j++) {
+                    const p = poisson(i, xGH) * poisson(j, xGA);
+                    if(i > j) probH += p; else if(i === j) probD += p; else probA += p;
+                    if(i + j > 2.5) over25 += p;
+                    if(p > maxP) { maxP = p; bestS = `${i} - ${j}`; }
+
+                    const cell = document.createElement('div');
+                    cell.className = 'heatmap-cell';
+                    cell.style.background = `rgba(34, 211, 238, ${Math.min(p * 5, 1)})`;
+                    cell.style.color = p > 0.1 ? '#000' : '#444';
+                    cell.innerText = (p*100).toFixed(0) + '%';
+                    hMap.appendChild(cell);
                 }
-
-                // Cálculo de média de gols da liga (usando a lista achatada)
-                let g = 0, j = 0;
-                currentStandings.forEach(t => { g += t.goalsFor; j += t.playedGames; });
-                leagueAvgGoals = (g / j) || 1.35;
-
-                // Busca partidas
-                const resM = await fetch(`${PROXY}https://api.football-data.org/v4/competitions/${league}/matches?status=SCHEDULED`, { headers: { 'X-Auth-Token': API_KEY }});
-                const dataM = await resM.json();
-                renderMatches(dataM.matches);
-            } catch (e) { 
-                grid.innerHTML = `<div class="col-span-full p-10 glass-card text-center text-red-400 text-xs font-black uppercase">Erro ao carregar dados. Verifique a conexão ou limite da API.</div>`;
-            }
-        }
-
-        function renderMatches(matches) {
-            const grid = document.getElementById('matchesGrid');
-            if(!matches || matches.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-10 text-center text-slate-500 uppercase text-[10px] font-black">Sem jogos agendados no momento.</div>`;
-                return;
             }
 
-            grid.innerHTML = matches.slice(0, 18).map(m => {
-                const date = new Date(m.utcDate).toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
-                const time = new Date(m.utcDate).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-                
-                return `
-                <div onclick="predictMatch(${m.homeTeam.id}, ${m.awayTeam.id})" class="glass-card p-5 rounded-[30px] flex justify-between items-center cursor-pointer group">
-                    <div class="flex flex-col gap-2 flex-1 min-w-0">
-                        <div class="flex items-center gap-3">
-                            <img src="${m.homeTeam.crest}" class="w-5 h-5 object-contain">
-                            <span class="text-[11px] font-black text-slate-200 truncate uppercase">${m.homeTeam.shortName || m.homeTeam.name}</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <img src="${m.awayTeam.crest}" class="w-5 h-5 object-contain">
-                            <span class="text-[11px] font-black text-slate-200 truncate uppercase">${m.awayTeam.shortName || m.awayTeam.name}</span>
-                        </div>
-                    </div>
-                    <div class="flex flex-col items-end ml-4">
-                        <span class="text-[8px] font-black text-blue-500 uppercase">${date}</span>
-                        <span class="text-[10px] font-black text-slate-500">${time}</span>
-                    </div>
-                </div>
-            `}).join('');
-        }
-
-        function predictMatch(hId, aId) {
-            // A busca agora funciona para qualquer time de qualquer grupo
-            const h = currentStandings.find(t => t.team.id === hId);
-            const a = currentStandings.find(t => t.team.id === aId);
+            // Update UI
+            document.getElementById('hLogo').src = h.team.crest;
+            document.getElementById('aLogo').src = a.team.crest;
+            document.getElementById('hName').innerText = h.team.shortName;
+            document.getElementById('aName').innerText = a.team.shortName;
+            document.getElementById('pScore').innerText = bestS;
+            document.getElementById('pConf').innerText = `CONFIANÇA: ${(maxP*450).toFixed(1)}%`;
             
-            if(!h || !a) {
-                alert("Dados insuficientes para este time na fase atual.");
-                return;
-            }
+            document.getElementById('winH').innerText = (probH*100).toFixed(1) + '%';
+            document.getElementById('winD').innerText = (probD*100).toFixed(1) + '%';
+            document.getElementById('winA').innerText = (probA*100).toFixed(1) + '%';
+            
+            document.getElementById('barH').style.width = (probH*100) + '%';
+            document.getElementById('barD').style.width = (probD*100) + '%';
+            document.getElementById('barA').style.width = (probA*100) + '%';
 
-            document.getElementById('predictionModal').style.display = 'block';
-            document.getElementById('modalLoading').classList.remove('hidden');
-            document.getElementById('modalContent').classList.add('hidden');
+            document.getElementById('mHand').innerText = (xGH - xGA).toFixed(2);
+            document.getElementById('mOver').innerText = (over25*100).toFixed(1) + '%';
 
-            setTimeout(() => {
-                const xGH = ((h.goalsFor / h.playedGames) / leagueAvgGoals) * ((a.goalsAgainst / a.playedGames) / leagueAvgGoals) * leagueAvgGoals * 1.10;
-                const xGA = ((a.goalsFor / a.playedGames) / leagueAvgGoals) * ((h.goalsAgainst / h.playedGames) / leagueAvgGoals) * leagueAvgGoals;
+            // Verdict Logic
+            let v = "";
+            if(probH > 0.5) v = `O ${h.team.shortName} entra como franco favorito. `;
+            else if(probA > 0.5) v = `Análise aponta vantagem para o visitante ${a.team.shortName}. `;
+            else v = "Confronto de alto equilíbrio técnico. ";
+            
+            v += over25 > 0.6 ? "Expectativa de jogo aberto com muitos gols." : "Tendência de jogo tático e poucos gols.";
+            document.getElementById('verdict').innerText = v;
 
-                let pH = 0, pD = 0, pA = 0, maxP = 0, score = "0 - 0";
-                for (let i = 0; i <= 5; i++) {
-                    for (let j = 0; j <= 5; j++) {
-                        let prob = getPoisson(i, xGH) * getPoisson(j, xGA);
-                        if (i > j) pH += prob; else if (i === j) pD += prob; else pA += prob;
-                        if (prob > maxP) { maxP = prob; score = `${i} - ${j}`; }
-                    }
-                }
-
-                document.getElementById('logoH').src = h.team.crest;
-                document.getElementById('logoA').src = a.team.crest;
-                document.getElementById('nameH').innerText = h.team.shortName || h.team.name;
-                document.getElementById('nameA').innerText = a.team.shortName || a.team.name;
-                document.getElementById('predictedScore').innerText = score;
-                document.getElementById('winPercH').innerText = Math.round(pH*100) + "%";
-                document.getElementById('winPercD').innerText = Math.round(pD*100) + "%";
-                document.getElementById('winPercA').innerText = Math.round(pA*100) + "%";
-                
-                document.getElementById('finalCall').innerText = pH > pA ? `Favoritismo: ${h.team.shortName}` : `Favoritismo: ${a.team.shortName}`;
-                document.getElementById('aiVerdict').innerText = `Análise baseada em xG projetado de ${xGH.toFixed(1)} vs ${xGA.toFixed(1)}. O modelo Poisson sugere ${score} como resultado mais provável.`;
-
-                document.getElementById('modalLoading').classList.add('hidden');
-                document.getElementById('modalContent').classList.remove('hidden');
-            }, 600);
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('content').classList.remove('hidden');
         }
 
-        function closeModal() { document.getElementById('predictionModal').style.display = 'none'; }
-        window.onload = checkSession;
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+        
+        // Init
+        checkSession();
     </script>
 </body>
 </html>
