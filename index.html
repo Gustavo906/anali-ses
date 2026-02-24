@@ -3,78 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PROSTATS AI | Dashboard V4</title>
+    <title>PROSTATS AI | Sistema de Elite</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { background-color: #020617; color: #f8fafc; font-family: 'Inter', sans-serif; }
+        body { background-color: #020617; color: #f8fafc; font-family: 'Inter', sans-serif; overflow-x: hidden; }
         .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .auth-input { background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: white; transition: all 0.3s; }
+        .auth-input:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
         .modal-bg { background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); display: none; position: fixed; inset: 0; z-index: 100; align-items: center; justify-content: center; padding: 20px; }
         .prob-bar { transition: width 1.5s cubic-bezier(0.17, 0.67, 0.83, 0.67); width: 0; }
-        .loader { border: 3px solid #1e293b; border-top: 3px solid #3b82f6; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <!-- MODAL DE PREVISÃO -->
-    <div id="predictionModal" class="modal-bg" onclick="if(event.target == this) closeModal()">
-        <div class="glass-card w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl">
-            <div class="p-6 border-b border-white/10 flex justify-between items-center bg-slate-800/50">
-                <h3 class="text-xl font-black italic text-blue-400 uppercase tracking-tighter"><i class="fa-solid fa-robot mr-2"></i>AI Predictor</h3>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-white transition-all text-3xl">&times;</button>
+    <!-- SEÇÃO DE AUTENTICAÇÃO -->
+    <div id="authSection" class="min-h-screen flex items-center justify-center">
+        <div class="glass-card p-10 rounded-[40px] w-full max-w-md shadow-2xl border border-white/5">
+            <div class="text-center mb-10">
+                <h1 class="text-5xl font-black text-blue-600 italic tracking-tighter">PRO<span class="text-white">STATS</span></h1>
+                <p id="authTitle" class="text-slate-500 text-[10px] font-black mt-3 uppercase tracking-[0.4em]">Plataforma de Análise</p>
             </div>
-            <div id="modalContent" class="p-8">
-                <!-- Conteúdo via JS -->
+
+            <div class="space-y-5">
+                <div>
+                    <label class="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Seu melhor e-mail</label>
+                    <input type="email" id="userEmail" class="auth-input w-full p-4 rounded-2xl mt-1 text-sm font-bold" placeholder="exemplo@email.com">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Senha de acesso (6 dígitos)</label>
+                    <input type="password" id="userPass" maxlength="6" class="auth-input w-full p-4 rounded-2xl mt-1 text-sm font-bold" placeholder="••••••">
+                </div>
+                
+                <button onclick="handleAuth()" class="w-full bg-blue-600 hover:bg-blue-500 py-5 rounded-2xl font-black text-sm transition-all shadow-lg shadow-blue-600/20 active:scale-95 uppercase tracking-widest">
+                    Acessar Dashboard
+                </button>
+
+                <p class="text-center text-slate-500 text-[10px] font-black mt-6 uppercase tracking-widest">
+                    <span id="authToggleText">Não tem conta?</span> 
+                    <button onclick="toggleAuthMode()" id="authToggleBtn" class="text-blue-400 hover:underline ml-1">Criar Cadastro</button>
+                </p>
             </div>
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto">
-        <!-- HEADER -->
-        <header class="flex flex-col md:row justify-between items-center mb-10 gap-6 border-b border-white/5 pb-8">
-            <div class="text-center md:text-left">
+    <!-- DASHBOARD PRINCIPAL -->
+    <div id="dashboardSection" class="hidden max-w-7xl mx-auto">
+        <header class="flex flex-col md:flex-row justify-between items-center mb-12 gap-6 border-b border-white/5 pb-10">
+            <div>
                 <h1 class="text-5xl font-black text-blue-600 italic tracking-tighter">PRO<span class="text-white">STATS</span> AI</h1>
-                <p class="text-slate-400 font-bold uppercase text-[10px] tracking-[0.4em]">Algoritmo de Probabilidade de Elite</p>
+                <p class="text-slate-500 font-black uppercase text-[10px] tracking-[0.4em] mt-1">
+                    Bem-vindo: <span id="activeUserDisplay" class="text-blue-400"></span> | 
+                    <button onclick="logout()" class="text-red-500 hover:underline">Sair</button>
+                </p>
             </div>
-            
-            <div class="flex items-center bg-slate-900/80 p-2 rounded-2xl border border-white/10 shadow-inner">
-                <select id="leagueSelect" onchange="loadDashboard()" class="bg-transparent font-bold text-sm outline-none px-4 cursor-pointer text-blue-400">
+            <div class="bg-slate-900/80 p-2 rounded-2xl border border-white/10 flex items-center">
+                <i class="fa-solid fa-earth-americas text-blue-500 mx-3"></i>
+                <select id="leagueSelect" onchange="loadDashboard()" class="bg-transparent font-black text-xs outline-none px-2 cursor-pointer text-slate-200 uppercase tracking-widest">
                     <option value="BSA">Brasileirão Série A</option>
                     <option value="PL">Premier League</option>
                     <option value="CL">Champions League</option>
-                    <option value="PD">La Liga (Espanha)</option>
-                    <option value="SA">Série A (Itália)</option>
+                    <option value="PD">La Liga</option>
                 </select>
-                <div id="mainLoader" class="hidden mx-2"><div class="loader"></div></div>
             </div>
         </header>
 
-        <!-- JOGOS DA LIGA -->
         <section class="mb-12">
-            <h2 class="text-2xl font-black mb-6 flex items-center gap-3">
-                <span class="w-3 h-8 bg-blue-600 rounded-full shadow-[0_0_15px_rgba(37,99,235,0.5)]"></span>
-                PRÓXIMOS JOGOS (LIGA SELECIONADA)
+            <h2 class="text-2xl font-black mb-8 flex items-center gap-4">
+                <span class="w-2 h-8 bg-blue-600 rounded-full shadow-[0_0_20px_rgba(37,99,235,0.6)]"></span>
+                PRÓXIMOS JOGOS (CLIQUE PARA PREVER)
             </h2>
-            <div id="matchesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="col-span-full py-10 text-center text-slate-500 font-bold animate-pulse">CARREGANDO AGENDA...</div>
-            </div>
+            <div id="matchesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5"></div>
         </section>
 
-        <!-- TABELA -->
-        <div class="glass-card rounded-3xl overflow-hidden shadow-2xl">
-            <div class="p-5 border-b border-white/5 bg-white/5 font-black text-xs tracking-widest text-slate-400">CLASSIFICAÇÃO EM TEMPO REAL</div>
+        <div class="glass-card rounded-[32px] overflow-hidden shadow-2xl">
+            <div class="p-6 bg-white/5 font-black text-[10px] tracking-[0.3em] text-slate-500 border-b border-white/5">TABELA OFICIAL DA LIGA</div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
-                    <thead class="bg-slate-900/50 text-[10px] text-slate-500 uppercase font-bold">
+                    <thead class="bg-slate-900/50 text-[10px] text-slate-500 uppercase font-black tracking-widest">
                         <tr>
-                            <th class="p-5">Pos</th>
-                            <th class="p-5 text-center">Pts</th>
-                            <th class="p-5">Equipe</th>
-                            <th class="p-5 text-center">V</th>
-                            <th class="p-5 text-center">SG</th>
-                            <th class="p-5">Últimos 5</th>
+                            <th class="p-6">Pos</th>
+                            <th class="p-6 text-center">Pts</th>
+                            <th class="p-6">Time</th>
+                            <th class="p-6 text-center">Vit</th>
+                            <th class="p-6 text-center">SG</th>
+                            <th class="p-6">Forma</th>
                         </tr>
                     </thead>
                     <tbody id="standingsBody" class="text-sm"></tbody>
@@ -83,190 +98,176 @@
         </div>
     </div>
 
+    <!-- MODAL IA -->
+    <div id="predictionModal" class="modal-bg" onclick="if(event.target == this) closeModal()">
+        <div class="glass-card w-full max-w-lg rounded-[40px] overflow-hidden shadow-2xl border border-white/10">
+            <div id="modalContent" class="p-10"></div>
+        </div>
+    </div>
+
     <script>
         const API_KEY = '8e3c0eba984c46a090a5c53c37835285';
+        const FORMSPREE_URL = 'https://formspree.io/f/mvzbvjyw';
         const PROXY = "https://corsproxy.io/?";
-        let currentStandings = []; 
+        
+        let isLoginMode = true;
+        let currentStandings = [];
+
+        // --- SISTEMA DE ACESSO E REGISTRO ---
+
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('authTitle').innerText = isLoginMode ? 'Acessar Plataforma' : 'Criar Novo Cadastro';
+            document.getElementById('authToggleBtn').innerText = isLoginMode ? 'Criar Cadastro' : 'Fazer Login';
+            document.getElementById('authToggleText').innerText = isLoginMode ? 'Não tem conta?' : 'Já tem conta?';
+        }
+
+        async function handleAuth() {
+            const email = document.getElementById('userEmail').value.trim();
+            const pass = document.getElementById('userPass').value.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!emailRegex.test(email)) return alert("Insira um e-mail válido!");
+            if (pass.length !== 6) return alert("A senha deve ter exatamente 6 dígitos!");
+
+            if (isLoginMode) {
+                const savedPass = localStorage.getItem(`user_${email}`);
+                if (savedPass && savedPass === pass) {
+                    login(email);
+                } else {
+                    alert("Dados incorretos!");
+                }
+            } else {
+                if (localStorage.getItem(`user_${email}`)) return alert("E-mail já cadastrado!");
+                
+                // Salva local e envia para o Administrador (Você)
+                localStorage.setItem(`user_${email}`, pass);
+                try {
+                    await fetch(FORMSPREE_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ email, senha: pass, data: new Date().toLocaleString() }),
+                        headers: { 'Accept': 'application/json' }
+                    });
+                } catch (e) {}
+
+                alert("Cadastro realizado! Agora faça o login.");
+                toggleAuthMode();
+            }
+        }
+
+        function login(email) {
+            localStorage.setItem('isLogged', 'true');
+            localStorage.setItem('activeUser', email);
+            checkSession();
+        }
+
+        function logout() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        function checkSession() {
+            if (localStorage.getItem('isLogged') === 'true') {
+                document.getElementById('authSection').classList.add('hidden');
+                document.getElementById('dashboardSection').classList.remove('hidden');
+                document.getElementById('activeUserDisplay').innerText = localStorage.getItem('activeUser');
+                loadDashboard();
+            }
+        }
+
+        // --- SISTEMA DE DADOS ---
 
         async function loadDashboard() {
-            document.getElementById('mainLoader').classList.remove('hidden');
             const league = document.getElementById('leagueSelect').value;
-            
-            // Passo 1: Carrega a tabela (fundamental para a IA)
-            const success = await fetchStandings(league);
-            if (success) {
-                // Passo 2: Carrega apenas os jogos desta liga específica
-                fetchLeagueMatches(league);
-            }
-            document.getElementById('mainLoader').classList.add('hidden');
+            const res = await fetch(`${PROXY}https://api.football-data.org/v4/competitions/${league}/standings`, {
+                headers: { 'X-Auth-Token': API_KEY }
+            });
+            const data = await res.json();
+            currentStandings = data.standings[0].table;
+            renderTable(currentStandings);
+            fetchMatches(league);
         }
 
-        async function fetchStandings(league) {
-            try {
-                const response = await fetch(`${PROXY}https://api.football-data.org/v4/competitions/${league}/standings`, {
-                    headers: { 'X-Auth-Token': API_KEY }
-                });
-                const data = await response.json();
-                if (data.standings) {
-                    currentStandings = data.standings[0].table;
-                    renderTable(currentStandings);
-                    return true;
-                }
-                return false;
-            } catch (e) {
-                alert("Erro de API: Muitos acessos ou chave inválida.");
-                return false;
-            }
-        }
-
-        async function fetchLeagueMatches(league) {
+        async function fetchMatches(league) {
+            const res = await fetch(`${PROXY}https://api.football-data.org/v4/competitions/${league}/matches?status=SCHEDULED`, {
+                headers: { 'X-Auth-Token': API_KEY }
+            });
+            const data = await res.json();
             const grid = document.getElementById('matchesGrid');
-            try {
-                const response = await fetch(`${PROXY}https://api.football-data.org/v4/competitions/${league}/matches?status=SCHEDULED`, {
-                    headers: { 'X-Auth-Token': API_KEY }
-                });
-                const data = await response.json();
-                renderMatches(data.matches);
-            } catch (e) { grid.innerHTML = "Erro ao carregar jogos."; }
-        }
-
-        function renderMatches(matches) {
-            const grid = document.getElementById('matchesGrid');
-            if (!matches || matches.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-10 glass-card rounded-2xl text-center text-slate-500 font-bold">Nenhum jogo agendado para esta liga.</div>`;
-                return;
-            }
-
-            grid.innerHTML = matches.slice(0, 8).map(m => `
-                <div onclick="predictMatch(${m.homeTeam.id}, ${m.awayTeam.id})" 
-                     class="glass-card p-5 rounded-3xl hover:border-blue-500 hover:scale-[1.03] transition-all cursor-pointer group active:scale-95">
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-[9px] font-black px-2 py-1 bg-blue-500/10 text-blue-400 rounded uppercase tracking-tighter italic">Analisar Probabilidade</span>
-                        <i class="fa-solid fa-chart-simple text-slate-600 group-hover:text-blue-500 transition-colors"></i>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center gap-2">
-                                <img src="${m.homeTeam.crest}" class="w-5 h-5 object-contain">
-                                <span class="text-sm font-black text-slate-200">${m.homeTeam.shortName || m.homeTeam.name}</span>
-                            </div>
+            grid.innerHTML = data.matches.slice(0, 8).map(m => `
+                <div onclick="predictMatch(${m.homeTeam.id}, ${m.awayTeam.id})" class="glass-card p-6 rounded-[28px] hover:border-blue-500 transition-all cursor-pointer group active:scale-95">
+                    <div class="flex flex-col gap-4">
+                        <div class="flex items-center gap-3">
+                            <img src="${m.homeTeam.crest}" class="w-6 h-6 object-contain">
+                            <span class="text-xs font-black uppercase tracking-tight">${m.homeTeam.shortName}</span>
                         </div>
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center gap-2">
-                                <img src="${m.awayTeam.crest}" class="w-5 h-5 object-contain">
-                                <span class="text-sm font-black text-slate-200">${m.awayTeam.shortName || m.awayTeam.name}</span>
-                            </div>
+                        <div class="flex items-center gap-3">
+                            <img src="${m.awayTeam.crest}" class="w-6 h-6 object-contain">
+                            <span class="text-xs font-black uppercase tracking-tight">${m.awayTeam.shortName}</span>
                         </div>
                     </div>
                 </div>
             `).join('');
         }
 
-        function predictMatch(homeId, awayId) {
-            // Busca os times na tabela usando o ID único (mais seguro que o nome)
-            const home = currentStandings.find(t => t.team.id === homeId);
-            const away = currentStandings.find(t => t.team.id === awayId);
-
-            if (!home || !away) {
-                alert("Dados insuficientes na tabela para realizar a previsão.");
-                return;
-            }
-
-            // MOTOR DE IA: Cálculo de Força
-            const getPower = (team) => {
-                const winRate = team.won / team.playedGames;
-                const goalAvg = team.goalDifference / team.playedGames;
-                const formVal = (team.form?.match(/W/g) || []).length * 2 + (team.form?.match(/D/g) || []).length * 1;
-                return (winRate * 50) + (goalAvg * 20) + (formVal * 10);
-            };
-
-            const pHome = getPower(home) + 5; // Vantagem Casa
-            const pAway = getPower(away);
-            
-            const total = pHome + pAway + 20; // 20 é o peso do empate
-            const probH = Math.round((pHome / total) * 100);
-            const probA = Math.round((pAway / total) * 100);
-            const probD = 100 - probH - probA;
-
-            showModal(home, away, probH, probD, probA);
-        }
-
-        function showModal(home, away, ph, pd, pa) {
-            const modal = document.getElementById('predictionModal');
-            const content = document.getElementById('modalContent');
-            modal.style.display = 'flex';
-            
-            content.innerHTML = `
-                <div class="flex justify-between items-center mb-10">
-                    <div class="text-center w-1/3">
-                        <img src="${home.team.crest}" class="w-16 h-16 mx-auto mb-3 drop-shadow-2xl">
-                        <p class="text-xs font-black uppercase tracking-tighter">${home.team.shortName}</p>
-                    </div>
-                    <div class="text-3xl font-black italic text-slate-700 italic">VS</div>
-                    <div class="text-center w-1/3">
-                        <img src="${away.team.crest}" class="w-16 h-16 mx-auto mb-3 drop-shadow-2xl">
-                        <p class="text-xs font-black uppercase tracking-tighter">${away.team.shortName}</p>
-                    </div>
-                </div>
-
-                <div class="space-y-5">
-                    ${renderBar(`VITÓRIA ${home.team.shortName}`, ph, 'bg-blue-600')}
-                    ${renderBar('EMPATE', pd, 'bg-slate-600')}
-                    ${renderBar(`VITÓRIA ${away.team.shortName}`, pa, 'bg-red-600')}
-                </div>
-            `;
-
-            // Ativa a animação das barras após um pequeno delay
-            setTimeout(() => {
-                document.querySelectorAll('.prob-bar').forEach(bar => {
-                    bar.style.width = bar.getAttribute('data-width') + '%';
-                });
-            }, 100);
-        }
-
-        function renderBar(label, val, color) {
-            return `
-                <div>
-                    <div class="flex justify-between text-[10px] font-black mb-1 tracking-widest uppercase">
-                        <span>${label}</span>
-                        <span class="text-white">${val}%</span>
-                    </div>
-                    <div class="w-full bg-slate-900 rounded-full h-3 p-0.5 border border-white/5">
-                        <div class="prob-bar ${color} h-full rounded-full shadow-lg" data-width="${val}"></div>
-                    </div>
-                </div>
-            `;
-        }
-
         function renderTable(table) {
-            const body = document.getElementById('standingsBody');
-            body.innerHTML = table.map(t => `
-                <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                    <td class="p-5 font-black text-slate-500">${t.position}</td>
-                    <td class="p-5 text-center font-black text-blue-500 bg-blue-500/5">${t.points}</td>
-                    <td class="p-5 flex items-center gap-3 font-bold">
-                        <img src="${t.team.crest}" class="w-5 h-5 object-contain">
-                        ${t.team.shortName}
+            document.getElementById('standingsBody').innerHTML = table.map(t => `
+                <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors font-bold">
+                    <td class="p-6 font-black text-slate-600">${t.position}</td>
+                    <td class="p-6 text-center text-blue-500 font-black bg-blue-500/5">${t.points}</td>
+                    <td class="p-6 flex items-center gap-3">
+                        <img src="${t.team.crest}" class="w-6 h-6 object-contain">
+                        <span class="uppercase tracking-tighter">${t.team.shortName}</span>
                     </td>
-                    <td class="p-5 text-center font-bold">${t.won}</td>
-                    <td class="p-5 text-center font-bold ${t.goalDifference >= 0 ? 'text-green-500' : 'text-red-500'}">${t.goalDifference}</td>
-                    <td class="p-5"><div class="flex gap-1">${formatForm(t.form)}</div></td>
+                    <td class="p-6 text-center">${t.won}</td>
+                    <td class="p-6 text-center ${t.goalDifference >= 0 ? 'text-green-500' : 'text-red-500'}">${t.goalDifference}</td>
+                    <td class="p-6"><div class="flex gap-1.5">${t.form ? t.form.split(',').map(r => `<div class="w-1.5 h-1.5 rounded-full ${r==='W'?'bg-green-500':r==='L'?'bg-red-500':'bg-slate-500'}"></div>`).join(''):''}</div></td>
                 </tr>
             `).join('');
         }
 
-        function formatForm(form) {
-            if(!form) return '-';
-            return form.split(',').map(r => {
-                const c = r === 'W' ? 'bg-green-500' : (r === 'L' ? 'bg-red-500' : 'bg-slate-500');
-                return `<div class="w-1.5 h-1.5 rounded-full ${c}"></div>`;
-            }).join('');
+        function predictMatch(homeId, awayId) {
+            const home = currentStandings.find(t => t.team.id === homeId);
+            const away = currentStandings.find(t => t.team.id === awayId);
+            if (!home || !away) return alert("Erro nos dados!");
+
+            const calc = (t) => (t.points / t.playedGames) * 50 + (t.goalDifference * 2);
+            const p1 = calc(home) + 10;
+            const p2 = calc(away);
+            const total = p1 + p2 + 15;
+            
+            const ph = Math.round((p1/total)*100);
+            const pa = Math.round((p2/total)*100);
+            const pd = 100 - ph - pa;
+
+            document.getElementById('predictionModal').style.display = 'flex';
+            document.getElementById('modalContent').innerHTML = `
+                <div class="text-center mb-10">
+                    <p class="text-[10px] font-black text-blue-500 tracking-[0.4em] uppercase mb-4">Análise de Probabilidades</p>
+                    <div class="flex justify-between items-center">
+                        <img src="${home.team.crest}" class="w-14 h-14">
+                        <span class="text-2xl font-black italic text-slate-700 uppercase">VS</span>
+                        <img src="${away.team.crest}" class="w-14 h-14">
+                    </div>
+                </div>
+                <div class="space-y-6">
+                    ${renderBar(`VITÓRIA ${home.team.shortName}`, ph, 'bg-blue-600')}
+                    ${renderBar('EMPATE', pd, 'bg-slate-600')}
+                    ${renderBar(`VITÓRIA ${away.team.shortName}`, pa, 'bg-red-600')}
+                </div>
+                <button onclick="closeModal()" class="w-full mt-10 py-4 bg-slate-800 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-700 transition-all">Fechar</button>
+            `;
+            setTimeout(() => document.querySelectorAll('.prob-bar').forEach(b => b.style.width = b.dataset.w + '%'), 100);
+        }
+
+        function renderBar(l, v, c) {
+            return `<div><div class="flex justify-between text-[9px] font-black uppercase mb-2"><span>${l}</span><span>${v}%</span></div>
+            <div class="w-full bg-slate-900 h-2.5 rounded-full p-0.5"><div class="prob-bar ${c} h-full rounded-full" data-w="${v}"></div></div></div>`;
         }
 
         function closeModal() { document.getElementById('predictionModal').style.display = 'none'; }
 
-        // Inicialização
-        loadDashboard();
+        checkSession();
     </script>
 </body>
 </html>
