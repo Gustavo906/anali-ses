@@ -3,220 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PROSTATS APEX | Elite Intelligence</title>
+    <title>PROSTATS APEX | Deep Analytics</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
-
-        :root {
-            --bg: #09090b;
-            --surface: #121217;
-            --border: #27272a;
-            --accent: #3b82f6;
-            --success: #10b981;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: #f4f4f5;
-            font-family: 'Inter', sans-serif;
-            letter-spacing: -0.01em;
-        }
-
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap');
+        :root { --bg: #050507; --panel: #111114; --accent: #3b82f6; --border: #27272a; }
+        body { background-color: var(--bg); color: #e4e4e7; font-family: 'Inter', sans-serif; letter-spacing: -0.01em; }
         .mono { font-family: 'JetBrains Mono', monospace; }
-
-        /* Estilo Dashboard Profissional */
-        .glass-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .glass-card:hover {
-            border-color: #3f3f46;
-            background: #16161d;
-        }
-
-        /* Badge de Posição */
-        .pos-badge {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 10px;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 99px;
-            color: #a1a1aa;
-        }
-
-        /* Barras de Probabilidade Smooth */
-        .prob-container {
-            height: 8px;
-            background: #27272a;
-            border-radius: 4px;
-            overflow: hidden;
-            display: flex;
-        }
-        .prob-segment { transition: width 1s ease-in-out; }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg); }
-        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 10px; }
-
-        .analysis-text {
-            line-height: 1.7;
-            font-size: 0.925rem;
-            color: #d4d4d8;
-        }
-
-        /* Efeito de carregamento */
-        .loading-shimmer {
-            background: linear-gradient(90deg, #121217 25%, #1c1c24 50%, #121217 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-        }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .match-card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 20px; cursor: pointer; transition: 0.2s; }
+        .match-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .rank-badge { background: #1c1c21; border: 1px solid #3f3f46; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; color: #a1a1aa; }
+        .divergent { border-left: 4px solid #f59e0b; background: linear-gradient(90deg, rgba(245, 158, 11, 0.05), transparent); }
+        #modal { backdrop-filter: blur(12px); }
+        .progress-bar { height: 6px; background: #27272a; border-radius: 3px; overflow: hidden; }
+        .progress-fill { height: 100%; transition: width 1s ease-in-out; }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
 
-    <!-- TOP NAVIGATION BAR -->
-    <nav class="h-16 border-b border-zinc-800 bg-zinc-950/50 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-[100]">
-        <div class="flex items-center gap-6">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-900/20">
-                    <i class="fa-solid fa-chart-simple text-white text-sm"></i>
-                </div>
-                <h1 class="text-sm font-extrabold tracking-tighter uppercase">ProStats <span class="text-blue-500">Apex</span></h1>
-            </div>
-            <div class="h-4 w-[1px] bg-zinc-800 hidden md:block"></div>
-            <div class="hidden md:flex items-center gap-4 text-[10px] mono text-zinc-500 font-bold uppercase tracking-widest">
-                <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> Data Stream: Active</span>
-                <span class="flex items-center gap-1.5">Window: 48 Hours</span>
-            </div>
-        </div>
-
-        <div class="flex items-center gap-3">
-            <select id="leagueSelect" onchange="fetchData()" class="bg-zinc-900 border border-zinc-800 text-[10px] font-bold px-4 py-2 rounded-lg outline-none focus:ring-1 ring-blue-500 text-zinc-300">
-                <option value="CL">Champions League</option>
-                <option value="PL">Premier League</option>
-                <option value="BSA">Brasileirão Série A</option>
-                <option value="PD">La Liga</option>
-                <option value="SA">Serie A</option>
-            </select>
-        </div>
+    <nav class="h-16 border-b border-zinc-800 bg-black px-6 flex items-center justify-between sticky top-0 z-[100]">
+        <h1 class="text-sm font-black tracking-tighter uppercase text-white">PROSTATS <span class="text-blue-500">APEX</span></h1>
+        <select id="leagueSelect" onchange="initApp()" class="bg-zinc-900 border border-zinc-700 text-[10px] font-bold px-4 py-2 rounded-lg text-white outline-none">
+            <option value="BSA">🇧🇷 BRASILEIRÃO SÉRIE A</option>
+            <option value="PL">🏴󠁧󠁢󠁥󠁮󠁧󠁿 PREMIER LEAGUE</option>
+            <option value="CL">🇪🇺 CHAMPIONS LEAGUE (Hoje/Amanhã)</option>
+            <option value="PD">🇪🇸 LA LIGA</option>
+            <option value="SA">🇮🇹 SERIE A</option>
+        </select>
     </nav>
 
-    <!-- DASHBOARD CONTENT -->
-    <main class="flex-1 p-6 lg:p-10 max-w-[1400px] mx-auto w-full">
-        <header class="mb-10">
-            <h2 class="text-3xl font-extrabold tracking-tight mb-2">Painel de Decisão Técnica</h2>
-            <p class="text-zinc-500 text-sm max-w-2xl">Mapeamento algorítmico de confrontos baseado em matrizes de Poisson e regressão de classificação.</p>
-        </header>
-
-        <!-- GRID DE JOGOS -->
-        <div id="matchesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            <!-- Cards injetados -->
-        </div>
-
-        <div id="emptyState" class="hidden py-32 text-center">
-            <div class="w-16 h-16 bg-zinc-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-800">
-                <i class="fa-solid fa-calendar-day text-zinc-600"></i>
-            </div>
-            <p class="mono text-xs text-zinc-500 uppercase tracking-widest">Sem eventos programados para o intervalo de 48h</p>
-        </div>
+    <main class="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full">
+        <div id="grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+        <div id="emptyMsg" class="hidden py-40 text-center text-zinc-600 mono text-xs uppercase tracking-widest">Nenhum jogo encontrado nesta janela.</div>
     </main>
 
-    <!-- MODAL DE ANÁLISE DE PROFUNDIDADE -->
-    <div id="modal" class="fixed inset-0 z-[200] bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="w-full max-w-5xl bg-[#121217] border border-zinc-800 rounded-2xl shadow-2xl flex flex-col max-h-[95vh] overflow-hidden">
-            
-            <div class="p-6 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/30">
-                <div class="flex items-center gap-4">
-                    <span class="text-[10px] mono font-bold bg-blue-600/10 text-blue-500 px-3 py-1 rounded border border-blue-600/20 uppercase tracking-widest">Relatório Deep Insights</span>
-                    <span id="mDate" class="text-[10px] mono text-zinc-500"></span>
-                </div>
-                <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-800 text-zinc-400"><i class="fa-solid fa-xmark"></i></button>
+    <!-- MODAL DE ANÁLISE -->
+    <div id="modal" class="fixed inset-0 z-[200] bg-black/95 hidden flex items-center justify-center p-4">
+        <div class="w-full max-w-4xl bg-[#0d0d0f] border border-zinc-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
+            <div class="p-6 border-b border-zinc-800 flex justify-between items-center">
+                <span class="text-[10px] mono font-bold text-blue-500 uppercase tracking-widest">AI Super Analysis Terminal</span>
+                <button onclick="closeModal()" class="text-zinc-500 hover:text-white text-2xl">&times;</button>
             </div>
 
-            <div class="flex-1 overflow-y-auto p-8 lg:p-12">
-                <!-- VERSUS HEADER -->
-                <div class="flex flex-col md:flex-row items-center justify-between gap-10 mb-16 border-b border-zinc-800 pb-16">
+            <div class="p-8 lg:p-10 overflow-y-auto">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-8 mb-12 border-b border-zinc-800 pb-12">
                     <div class="text-center flex-1">
-                        <div class="pos-badge mb-4 inline-block"><span id="mPosH">--</span>º Lugar</div>
-                        <img id="mLogoH" class="w-24 h-24 mx-auto mb-6 drop-shadow-2xl">
-                        <h4 id="mNameH" class="text-2xl font-black uppercase tracking-tighter">--</h4>
+                        <div class="text-3xl font-black text-white italic mb-1"><span id="mPosH">--</span>º</div>
+                        <p class="text-[9px] uppercase font-bold text-zinc-500 mb-4">Rank Oficial</p>
+                        <img id="mLogoH" class="w-16 h-16 mx-auto mb-2">
+                        <h4 id="mNameH" class="text-lg font-bold uppercase text-white">--</h4>
                     </div>
-
-                    <div class="text-center px-10">
-                        <div class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Placar Projetado</div>
-                        <div id="mScore" class="text-8xl font-black italic tracking-tighter text-white">--</div>
-                        <div id="mConf" class="mt-4 text-[10px] font-bold text-emerald-500 mono bg-emerald-500/5 py-1 px-4 rounded-full inline-block">--</div>
+                    <div class="text-center">
+                        <p class="text-[9px] mono text-zinc-500 uppercase mb-2">Score Projetado</p>
+                        <div id="mScore" class="text-7xl font-black italic text-white tracking-tighter">--</div>
                     </div>
-
                     <div class="text-center flex-1">
-                        <div class="pos-badge mb-4 inline-block"><span id="mPosA">--</span>º Lugar</div>
-                        <img id="mLogoA" class="w-24 h-24 mx-auto mb-6 drop-shadow-2xl">
-                        <h4 id="mNameA" class="text-2xl font-black uppercase tracking-tighter">--</h4>
+                        <div class="text-3xl font-black text-white italic mb-1"><span id="mPosA">--</span>º</div>
+                        <p class="text-[9px] uppercase font-bold text-zinc-500 mb-4">Rank Oficial</p>
+                        <img id="mLogoA" class="w-16 h-16 mx-auto mb-2">
+                        <h4 id="mNameA" class="text-lg font-bold uppercase text-white">--</h4>
                     </div>
                 </div>
 
-                <!-- ANALYTICS CONTENT -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                    
-                    <!-- IA SUPER ANALYSIS (LEFT 2/3) -->
-                    <div class="lg:col-span-2 space-y-8">
-                        <div class="bg-blue-600/5 border-l-4 border-blue-600 p-8 rounded-r-2xl">
-                            <h5 class="text-blue-500 font-bold text-xs uppercase mono mb-4 flex items-center gap-2">
-                                <i class="fa-solid fa-microchip"></i> Análise Heurística da IA
-                            </h5>
-                            <p id="mAnalysis" class="analysis-text italic"></p>
-                        </div>
-
-                        <!-- Probabilidades Visuais -->
-                        <div class="space-y-6">
-                            <h5 class="text-zinc-500 font-bold text-[10px] uppercase mono tracking-widest">Distribuição de Probabilidade (ML)</h5>
-                            <div class="prob-container">
-                                <div id="mBarH" class="prob-segment bg-blue-600 h-full" style="width: 33%"></div>
-                                <div id="mBarD" class="prob-segment bg-zinc-600 h-full" style="width: 33%"></div>
-                                <div id="mBarA" class="prob-segment bg-white h-full" style="width: 34%"></div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <div class="space-y-6">
+                        <h5 class="text-xs font-bold text-zinc-500 uppercase flex items-center gap-2"><i class="fa-solid fa-brain text-blue-500"></i> Insight do Especialista IA</h5>
+                        <div class="bg-blue-600/5 border-l-4 border-blue-600 p-6 rounded-r-xl text-base italic text-zinc-200 leading-relaxed" id="mAnalysis">Carregando análise...</div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="bg-zinc-900 p-3 rounded-lg text-center">
+                                <span class="text-[9px] text-zinc-500 block">WIN CASA</span>
+                                <span id="mProbH" class="text-sm font-bold text-blue-500">0%</span>
                             </div>
-                            <div class="grid grid-cols-3 text-center">
-                                <div><span class="text-[10px] text-zinc-500 block uppercase">Casa</span><span id="mProbH" class="font-bold text-blue-500">0%</span></div>
-                                <div><span class="text-[10px] text-zinc-500 block uppercase">Empate</span><span id="mProbD" class="font-bold text-zinc-400">0%</span></div>
-                                <div><span class="text-[10px] text-zinc-500 block uppercase">Fora</span><span id="mProbA" class="font-bold text-white">0%</span></div>
+                            <div class="bg-zinc-900 p-3 rounded-lg text-center">
+                                <span class="text-[9px] text-zinc-500 block">EMPATE</span>
+                                <span id="mProbD" class="text-sm font-bold text-zinc-500">0%</span>
+                            </div>
+                            <div class="bg-zinc-900 p-3 rounded-lg text-center">
+                                <span class="text-[9px] text-zinc-500 block">WIN FORA</span>
+                                <span id="mProbA" class="text-sm font-bold text-white">0%</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- METRICS SIDEBAR (RIGHT 1/3) -->
-                    <div class="space-y-4">
-                        <div class="bg-zinc-900/50 p-6 rounded-2xl border border-zinc-800">
-                            <h6 class="text-[10px] font-bold text-zinc-500 uppercase mb-4">Métricas de Jogo</h6>
-                            <div class="space-y-4">
-                                <div class="flex justify-between items-end">
-                                    <span class="text-xs text-zinc-400 uppercase">Prob. Over 2.5</span>
-                                    <span id="mOver" class="text-lg font-bold mono">0%</span>
-                                </div>
-                                <div class="flex justify-between items-end">
-                                    <span class="text-xs text-zinc-400 uppercase">Ambas Marcam</span>
-                                    <span id="mBtts" class="text-lg font-bold mono">0%</span>
-                                </div>
-                                <div class="h-[1px] bg-zinc-800 my-2"></div>
-                                <div class="flex justify-between items-end">
-                                    <span class="text-xs text-zinc-400 uppercase">Diferença de Rank</span>
-                                    <span id="mRankDiff" class="text-lg font-bold mono">--</span>
-                                </div>
-                                <div class="flex justify-between items-end">
-                                    <span class="text-xs text-zinc-400 uppercase text-blue-500">Valor Esperado (xG)</span>
-                                    <span id="mTotalXG" class="text-lg font-bold mono text-blue-500">0.00</span>
-                                </div>
-                            </div>
+                    <div class="bg-zinc-900/40 p-6 rounded-2xl border border-zinc-800 space-y-4">
+                        <h5 class="text-xs font-bold text-zinc-500 uppercase mb-4">Métricas de Probabilidade</h5>
+                        <div>
+                            <div class="flex justify-between text-[10px] mb-1"><span>Chance Over 2.5 Gols</span><span id="mOver" class="font-bold">0%</span></div>
+                            <div class="progress-bar"><div id="mBarOver" class="progress-fill bg-blue-600" style="width: 0%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] mb-1"><span>Ambas Marcam (BTTS)</span><span id="mBtts" class="font-bold">0%</span></div>
+                            <div class="progress-bar"><div id="mBarBtts" class="progress-fill bg-emerald-500" style="width: 0%"></div></div>
+                        </div>
+                        <div class="pt-4 flex justify-between items-center border-t border-zinc-800">
+                            <span class="text-[10px] uppercase text-zinc-500">Expectativa xG Total:</span>
+                            <span id="mTotalXG" class="text-xl font-black text-blue-500">0.00</span>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -225,18 +109,12 @@
     <script>
         const API_KEY = '8e3c0eba984c46a090a5c53c37835285';
         const PROXY = "https://corsproxy.io/?";
-        let engine = { table: [], avgGoals: 0 };
+        let store = { table: [], matches: [], avg: 0 };
 
-        async function fetchData() {
+        async function initApp() {
             const league = document.getElementById('leagueSelect').value;
-            const grid = document.getElementById('matchesGrid');
-            const empty = document.getElementById('emptyState');
-            
-            grid.innerHTML = `<div class="col-span-full h-40 flex flex-col items-center justify-center gap-4">
-                <div class="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                <span class="mono text-[10px] text-zinc-500 uppercase tracking-widest">Sincronizando Datacenter...</span>
-            </div>`;
-            empty.classList.add('hidden');
+            const grid = document.getElementById('grid');
+            grid.innerHTML = `<div class="col-span-full py-20 text-center mono text-[10px] animate-pulse">SINCRONIZANDO DADOS NACIONAIS...</div>`;
 
             try {
                 const [resS, resM] = await Promise.all([
@@ -247,103 +125,102 @@
                 const sD = await resS.json();
                 const mD = await resM.json();
 
-                engine.table = sD.standings[0].table;
-                
-                // Média Dinâmica da Liga
-                let tg = 0, tj = 0;
-                engine.table.forEach(t => { tg += t.goalsFor; tj += t.playedGames; });
-                engine.avgGoals = tg / tj;
+                // Lógica de Tabela (Champions vs Outras)
+                if (league === 'CL') {
+                    store.table = [];
+                    sD.standings.forEach(grp => grp.table.forEach(team => { team.group = grp.group; store.table.push(team); }));
+                } else {
+                    store.table = sD.standings[0].table;
+                }
 
-                // Filtro 48h (Hoje e Amanhã)
+                // Média de Gols
+                let goals = 0, games = 0;
+                store.table.forEach(t => { goals += t.goalsFor; games += t.playedGames; });
+                store.avg = goals / (games || 1);
+
+                // Filtro solicitado
                 const now = new Date();
                 const limit = new Date();
-                limit.setHours(now.getHours() + 48);
+                const windowHours = (league === 'CL') ? 48 : 120; // 48h para Champions, 5 dias para o resto
+                limit.setHours(now.getHours() + windowHours);
 
-                const validMatches = mD.matches.filter(m => {
-                    const matchDate = new Date(m.utcDate);
-                    return matchDate >= now && matchDate <= limit;
+                const valid = mD.matches.filter(m => {
+                    const d = new Date(m.utcDate);
+                    return d >= now && d <= limit;
                 });
 
-                if(validMatches.length === 0) {
+                if (valid.length === 0) {
                     grid.innerHTML = "";
-                    empty.classList.remove('hidden');
+                    document.getElementById('emptyMsg').classList.remove('hidden');
                     return;
                 }
 
-                grid.innerHTML = validMatches.map(m => {
-                    const h = engine.table.find(t => t.team.id === m.homeTeam.id);
-                    const a = engine.table.find(t => t.team.id === m.awayTeam.id);
-                    const d = new Date(m.utcDate);
-                    
+                document.getElementById('emptyMsg').classList.add('hidden');
+                grid.innerHTML = valid.map(m => {
+                    const h = store.table.find(t => t.team.id === m.homeTeam.id);
+                    const a = store.table.find(t => t.team.id === m.awayTeam.id);
+                    const isDiv = a && h && (a.position < h.position - 6);
+
                     return `
-                    <div onclick="runDeepAnalysis(${m.homeTeam.id}, ${m.awayTeam.id}, '${m.utcDate}')" class="glass-card p-6 cursor-pointer relative overflow-hidden group">
+                    <div onclick="runAnalysis(${m.homeTeam.id}, ${m.awayTeam.id})" class="match-card ${isDiv ? 'divergent' : ''}">
                         <div class="flex justify-between items-center mb-6">
-                            <span class="text-[10px] mono font-bold text-zinc-500">${d.toLocaleDateString('pt-BR')} ${d.getHours()}:${d.getMinutes().toString().padStart(2, '0')}</span>
-                            <div class="flex gap-1.5">
-                                <span class="pos-badge">${h ? h.position : '?'}/º</span>
-                                <span class="pos-badge border-blue-500/20 text-blue-400">${a ? a.position : '?'}/º</span>
+                            <span class="text-[9px] mono text-zinc-500">${new Date(m.utcDate).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</span>
+                            <div class="flex gap-2">
+                                <span class="rank-badge">CASA: ${h ? h.position : '?'}º</span>
+                                <span class="rank-badge">FORA: ${a ? a.position : '?'}º</span>
                             </div>
                         </div>
-                        <div class="space-y-4 mb-4">
+                        <div class="space-y-3">
                             <div class="flex items-center gap-3">
-                                <img src="${m.homeTeam.crest}" class="w-6 h-6 object-contain">
-                                <span class="text-sm font-bold uppercase tracking-tight truncate">${m.homeTeam.shortName}</span>
+                                <img src="${m.homeTeam.crest}" class="w-5 h-5 object-contain">
+                                <span class="text-sm font-bold uppercase text-white">${m.homeTeam.shortName}</span>
                             </div>
                             <div class="flex items-center gap-3">
-                                <img src="${m.awayTeam.crest}" class="w-6 h-6 object-contain">
-                                <span class="text-sm font-bold uppercase tracking-tight truncate">${m.awayTeam.shortName}</span>
+                                <img src="${m.awayTeam.crest}" class="w-5 h-5 object-contain">
+                                <span class="text-sm font-bold uppercase text-white">${m.awayTeam.shortName}</span>
                             </div>
-                        </div>
-                        <div class="pt-4 border-t border-zinc-800 flex justify-between items-center">
-                            <span class="text-[9px] mono font-bold text-blue-500 uppercase">Processar Insights</span>
-                            <i class="fa-solid fa-chevron-right text-zinc-700 text-[10px] group-hover:translate-x-1 transition-transform"></i>
                         </div>
                     </div>`;
                 }).join('');
 
             } catch (e) {
-                grid.innerHTML = `<div class="col-span-full p-10 bg-red-900/10 border border-red-900/20 rounded-2xl text-center text-red-500 mono text-xs uppercase tracking-widest">Rate Limit da API atingido. Aguarde 60 segundos.</div>`;
+                grid.innerHTML = `<div class="col-span-full py-10 text-red-500 text-center mono uppercase text-xs">Erro: Limite de API ou Conexão.</div>`;
             }
         }
 
-        // MOTOR POISSON BAYESIANO
         function factorial(n) { return (n <= 1) ? 1 : n * factorial(n - 1); }
-        function poisson(k, lambda) { return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k); }
+        function poisson(k, lambda) { return (Math.pow(lambda, k) * Math.exp(-lambda)) / Math.exp(Math.log(factorial(k))); }
 
-        function runDeepAnalysis(hId, aId, dateStr) {
-            const h = engine.table.find(t => t.team.id === hId);
-            const a = engine.table.find(t => t.team.id === aId);
+        function runAnalysis(hId, aId) {
+            const h = store.table.find(t => t.team.id === hId);
+            const a = store.table.find(t => t.team.id === aId);
             if(!h || !a) return;
 
-            const modal = document.getElementById('modal');
-            modal.classList.remove('hidden');
+            document.getElementById('modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
 
-            document.getElementById('mDate').innerText = new Date(dateStr).toLocaleString('pt-BR');
+            // Cálculo xG Realista
+            const hAtk = (h.goalsFor / (h.playedGames || 1)) / store.avg;
+            const hDef = (h.goalsAgainst / (h.playedGames || 1)) / store.avg;
+            const aAtk = (a.goalsFor / (a.playedGames || 1)) / store.avg;
+            const aDef = (a.goalsAgainst / (a.playedGames || 1)) / store.avg;
 
-            // Poisson Calculation
-            const hAtk = (h.goalsFor / h.playedGames) / engine.avgGoals;
-            const hDef = (h.goalsAgainst / h.playedGames) / engine.avgGoals;
-            const aAtk = (a.goalsFor / a.playedGames) / engine.avgGoals;
-            const aDef = (a.goalsAgainst / a.playedGames) / engine.avgGoals;
+            const xGH = hAtk * aDef * store.avg * 1.15;
+            const xGA = aAtk * hDef * store.avg;
 
-            // Ajuste Vantagem Campo (15%)
-            const xGH = hAtk * aDef * engine.avgGoals * 1.15;
-            const xGA = aAtk * hDef * engine.avgGoals;
-
-            let probH = 0, probD = 0, probA = 0, over2 = 0, btts = 0, maxP = 0, bestS = "";
+            let probH = 0, probD = 0, probA = 0, over25 = 0, btts = 0, maxP = 0, bestS = "";
 
             for(let i=0; i<6; i++) {
                 for(let j=0; j<6; j++) {
-                    const p = poisson(i, xGH) * poisson(j, xGA);
+                    const p = (Math.pow(xGH, i) * Math.exp(-xGH) / factorial(i)) * (Math.pow(xGA, j) * Math.exp(-xGA) / factorial(j));
                     if(i > j) probH += p; else if(i === j) probD += p; else probA += p;
-                    if(i + j > 2.5) over2 += p;
+                    if(i + j > 2.5) over25 += p;
                     if(i > 0 && j > 0) btts += p;
                     if(p > maxP) { maxP = p; bestS = `${i} - ${j}`; }
                 }
             }
 
-            // Atualização da UI (Cores preservadas)
+            // Atualização do Modal
             document.getElementById('mLogoH').src = h.team.crest;
             document.getElementById('mLogoA').src = a.team.crest;
             document.getElementById('mNameH').innerText = h.team.shortName;
@@ -351,49 +228,34 @@
             document.getElementById('mPosH').innerText = h.position;
             document.getElementById('mPosA').innerText = a.position;
             document.getElementById('mScore').innerText = bestS;
-            document.getElementById('mConf').innerText = `CONFIANÇA: ${(maxP * 100).toFixed(1)}%`;
             
             document.getElementById('mProbH').innerText = (probH * 100).toFixed(1) + '%';
             document.getElementById('mProbD').innerText = (probD * 100).toFixed(1) + '%';
             document.getElementById('mProbA').innerText = (probA * 100).toFixed(1) + '%';
             
-            document.getElementById('mBarH').style.width = (probH * 100) + '%';
-            document.getElementById('mBarD').style.width = (probD * 100) + '%';
-            document.getElementById('mBarA').style.width = (probA * 100) + '%';
-
-            document.getElementById('mOver').innerText = (over2 * 100).toFixed(0) + '%';
-            document.getElementById('mBtts').innerText = (btts * 100).toFixed(0) + '%';
-            document.getElementById('mRankDiff').innerText = Math.abs(h.position - a.position);
+            document.getElementById('mOver').innerText = (over25 * 100).toFixed(1) + '%';
+            document.getElementById('mBtts').innerText = (btts * 100).toFixed(1) + '%';
+            document.getElementById('mBarOver').style.width = (over25 * 100) + '%';
+            document.getElementById('mBarBtts').style.width = (btts * 100) + '%';
             document.getElementById('mTotalXG').innerText = (xGH + xGA).toFixed(2);
 
-            // GERAÇÃO DE ANÁLISE PROFUNDA (Não genérica)
-            generateDeepAnalysis(h, a, probH, probA, xGH, xGA);
-        }
-
-        function generateDeepAnalysis(h, a, pH, pA, xGH, xGA) {
-            let n = "";
+            // Análise Heurística
             const diff = h.position - a.position;
-
-            if (Math.abs(diff) > 10) {
-                const fav = diff < 0 ? h.team.shortName : a.team.shortName;
-                n = `DISPARIDADE TÉCNICA CLARA: O ${fav} opera em um patamar de eficiência ${(xGH > xGA ? xGH/xGA : xGA/xGH).toFixed(1)}x superior. A análise quantitativa sugere que a posição na tabela reflete fielmente o volume de jogo. Não identificamos cenários de alta probabilidade para 'zebra'.`;
-            } else if (pH > 0.55) {
-                n = `VANTAGEM ESTRUTURAL: O ${h.team.shortName} possui um diferencial de xG de ${(xGH - xGA).toFixed(2)} em relação ao oponente. O modelo identifica que o fator campo será decisivo para romper o bloqueio defensivo do ${a.team.shortName}, que costuma ceder mais gols contra ataques de elite.`;
-            } else if (xGH + xGA > 3.0) {
-                n = `CENÁRIO DE VOLATILIDADE: Ambos os times possuem defesas vulneráveis mas ataques explosivos. Com um xG Total de ${(xGH+xGA).toFixed(2)}, esperamos uma partida aberta onde as linhas de handicap perdem valor frente ao mercado de gols (Over).`;
+            let n = "";
+            if (probH > 0.55 && diff > 5) {
+                n = `OPORTUNIDADE DETECTADA: O ${h.team.shortName} está abaixo no Rank (${h.position}º), mas sua eficiência de gols em casa é superior. A IA detecta valor em contrariar a tabela nacional aqui.`;
+            } else if (probH > 0.65) {
+                n = `DOMÍNIO CONFIRMADO: O mandante possui uma expectativa de ${(xGH).toFixed(1)} gols contra a defesa vulnerável do visitante. Favoritismo estatístico consolidado.`;
+            } else if (over25 > 0.60) {
+                n = `CENÁRIO DE OVER: Ambas as defesas cedem espaço significativo. A matriz de Poisson aponta alta probabilidade de rede balançando para os dois lados.`;
             } else {
-                n = `CONFRONTO EQUILIBRADO: Separados por apenas ${Math.abs(diff)} posições, os dados indicam um jogo de xG baixo (${(xGH+xGA).toFixed(2)}). O empate tem uma probabilidade matemática de ${(33).toFixed(0)}%, o que é significativamente alto para este mercado.`;
+                n = `EQUILÍBRIO TÁTICO: As posições ${h.position}º e ${a.position}º refletem um jogo de xG baixo. O empate em ${(probD*100).toFixed(0)}% tem um peso maior do que o mercado de apostas sugere.`;
             }
-
             document.getElementById('mAnalysis').innerText = n;
         }
 
-        function closeModal() {
-            document.getElementById('modal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-
-        window.onload = fetchData;
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); document.body.style.overflow = 'auto'; }
+        window.onload = initApp;
     </script>
 </body>
 </html>
