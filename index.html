@@ -3,195 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PROSTATS APEX | Neural Analytics V5</title>
+    <title>PROSTATS APEX | Titan v38.0 Identity</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap');
-        :root { --bg: #050507; --panel: #0d0d0f; --ai: #3b82f6; --brain: #a855f7; }
-        body { background-color: var(--bg); color: #e4e4e7; font-family: 'Inter', sans-serif; letter-spacing: -0.01em; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+        :root { --bg: #030305; --panel: #0a0a0c; --border: #1a1a1e; --ai-blue: #3b82f6; --emerald: #10b981; }
+        body { background-color: var(--bg); color: #d1d1d6; font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         
-        /* Layout de Cards */
-        .glass-card { background: var(--panel); border: 1px solid #1f1f23; border-radius: 20px; padding: 24px; transition: 0.3s; cursor: pointer; }
-        .glass-card:hover { border-color: var(--ai); background: #111115; }
+        /* Grid de Jogos Responsivo */
+        .data-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px; cursor: pointer; transition: 0.2s; position: relative; }
+        .data-card:hover { border-color: var(--ai-blue); background: #0c0c11; transform: translateY(-2px); }
         
-        .rank-badge { background: #1a1a1e; border: 1px solid #333; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; color: #94a3b8; }
+        /* Nomes no Grid com Auto-Ajuste */
+        .grid-name { 
+            font-size: clamp(9px, 2vw, 11px); 
+            font-weight: 800; 
+            color: #fff; 
+            text-transform: uppercase; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis;
+            display: block;
+            width: 100%;
+        }
+
+        /* Modal Layout Lado a Lado */
+        .modal-header-pro { display: grid; grid-template-columns: 1fr 80px 1fr; align-items: center; gap: 10px; width: 100%; text-align: center; }
+        .score-box { font-family: 'JetBrains Mono'; font-weight: 800; color: #fff; line-height: 1; white-space: nowrap; }
         
-        /* NOVAS BARRAS DE PROBABILIDADE GIGANTES */
-        .prob-row { margin-bottom: 20px; }
-        .prob-label { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; }
-        .prob-name { font-size: 10px; font-weight: 900; text-transform: uppercase; color: #71717a; letter-spacing: 0.1em; }
-        .prob-value { font-size: 20px; font-weight: 900; font-family: 'JetBrains Mono'; }
-        
-        .huge-bar-bg { height: 12px; background: #1a1a1e; border-radius: 6px; overflow: hidden; width: 100%; border: 1px solid #27272a; }
-        .huge-bar-fill { height: 100%; transition: width 1.5s cubic-bezier(0.19, 1, 0.22, 1); }
+        .history-tag { 
+            font-size: 7px; 
+            font-weight: 700; 
+            padding: 2px 5px; 
+            border-radius: 4px; 
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            margin-top: 4px;
+            display: inline-block;
+            max-width: 90px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-        .fill-home { background: var(--ai); box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
-        .fill-draw { background: #52525b; }
-        .fill-away { background: #f8fafc; box-shadow: 0 0 15px rgba(255, 255, 255, 0.2); }
+        .report-box { border-left: 3px solid var(--ai-blue); background: linear-gradient(90deg, rgba(59, 130, 246, 0.05) 0%, rgba(0,0,0,0) 100%); padding: 15px; border-radius: 0 12px 12px 0; margin-bottom: 10px; font-size: 13px; }
 
-        /* Modal */
-        #modal { backdrop-filter: blur(20px); z-index: 9999; }
-        .log-box { background: #000; border: 1px solid #1f1f23; font-size: 9px; padding: 10px; border-radius: 8px; max-height: 120px; overflow-y: auto; color: #a855f7; }
-
+        #modal { backdrop-filter: blur(40px); z-index: 10000; display: none; }
+        #modal.active { display: flex; }
         ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
 
-    <!-- TOP NAVIGATION -->
-    <nav class="h-16 border-b border-zinc-800 bg-black px-6 flex items-center justify-between sticky top-0 z-[100]">
-        <div class="flex items-center gap-4">
-            <h1 class="text-sm font-black tracking-tighter uppercase text-white">APEX <span class="text-blue-500 italic">NEURAL v5</span></h1>
-            <div class="h-4 w-[1px] bg-zinc-800 hidden md:block"></div>
-            <div class="hidden lg:flex items-center gap-3">
-                <span class="text-[9px] mono text-purple-400 font-bold uppercase">Memória Local Ativa</span>
-                <div class="w-20 h-1 bg-zinc-800 rounded-full overflow-hidden">
-                    <div id="brainBar" class="h-full bg-purple-500" style="width: 0%"></div>
-                </div>
-            </div>
-        </div>
-
-        <select id="leagueSelect" onchange="syncData()" class="bg-zinc-900 border border-zinc-700 text-[10px] font-bold px-4 py-2 rounded-xl text-white outline-none focus:ring-1 ring-blue-500">
-            <option value="BSA">🇧🇷 BRASILEIRÃO SÉRIE A</option>
+    <!-- NAV -->
+    <nav class="h-16 border-b border-zinc-800 bg-black/90 px-6 flex items-center justify-between sticky top-0 z-[1000]">
+        <h1 class="text-sm font-black tracking-widest text-white uppercase italic">APEX <span class="text-blue-500">TITAN v38</span></h1>
+        <select id="leagueSelect" onchange="initApp()" class="bg-zinc-900 border border-zinc-800 text-[10px] font-bold px-3 py-2 rounded-xl text-white outline-none">
             <option value="PL">🏴󠁧󠁢󠁥󠁮󠁧󠁿 PREMIER LEAGUE</option>
-            <option value="CL">🇪🇺 CHAMPIONS LEAGUE (48H)</option>
+            <option value="BSA">🇧🇷 BRASILEIRÃO A</option>
             <option value="PD">🇪🇸 LA LIGA</option>
             <option value="SA">🇮🇹 SERIE A</option>
+            <option value="BL1">🇩🇪 BUNDESLIGA</option>
+            <option value="CL">🇪🇺 CHAMPIONS LEAGUE</option>
         </select>
     </nav>
 
-    <!-- MAIN CONTENT -->
-    <main class="flex-1 p-6 lg:p-12 max-w-7xl mx-auto w-full">
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-12">
-            
-            <!-- LISTA DE JOGOS -->
-            <div class="lg:col-span-3">
-                <div class="flex justify-between items-center mb-10 border-b border-zinc-800 pb-6">
-                    <h2 class="text-3xl font-black text-white italic tracking-tighter">PRÓXIMOS CONFRONTOS</h2>
-                    <div class="text-[10px] mono text-zinc-500 bg-zinc-900 px-4 py-1.5 rounded-full border border-zinc-800 uppercase font-bold tracking-widest">
-                        Scanner: <span id="matchCount" class="text-blue-500">0</span> ativos
-                    </div>
-                </div>
-                <div id="grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
-                <div id="empty" class="hidden py-40 text-center text-zinc-700 italic">Buscando dados na janela de 48h...</div>
-            </div>
+    <main class="flex-1 p-4 lg:p-10 max-w-7xl mx-auto w-full">
+        <header class="mb-8">
+            <h2 class="text-2xl font-black text-white uppercase italic">Radar de Decisão</h2>
+            <p id="statusMsg" class="text-zinc-600 text-[10px] mono uppercase tracking-widest italic">Iniciando estudo de dados...</p>
+        </header>
 
-            <!-- PAINEL LATERAL -->
-            <div class="space-y-6">
-                <h2 class="text-lg font-black text-white uppercase italic">Status Neural</h2>
-                <div class="bg-zinc-900/40 p-6 rounded-[24px] border border-zinc-800">
-                    <p class="text-[10px] mono text-zinc-500 uppercase mb-4 tracking-widest">Logs de Aprendizado</p>
-                    <div id="learnLog" class="log-box mono uppercase leading-loose text-emerald-500">
-                        <div>> Sincronizando rede...</div>
-                    </div>
-                </div>
-                <div class="bg-purple-600/5 p-6 rounded-[24px] border border-purple-600/20">
-                    <p class="text-[10px] mono text-purple-400 uppercase mb-1 font-bold">Experiência da IA</p>
-                    <h3 id="expCount" class="text-3xl font-black text-white italic">0</h3>
-                    <p class="text-[10px] text-zinc-500 mt-1 uppercase">Eventos Analisados</p>
-                </div>
-                <button onclick="localStorage.clear(); location.reload();" class="w-full py-4 bg-zinc-900 border border-zinc-800 text-[10px] font-bold uppercase rounded-2xl hover:bg-red-900/20 transition-all text-zinc-600 hover:text-red-400">
-                    Limpar Conhecimento
-                </button>
-            </div>
-        </div>
+        <!-- Grid Responsivo: 1 col mobile, 2 col tablet, 3 col desktop -->
+        <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <div id="empty" class="hidden py-40 text-center text-zinc-700 mono text-[11px] uppercase italic">Buscando novas partidas...</div>
     </main>
 
-    <!-- MODAL DE ANÁLISE PROFUNDA -->
-    <div id="modal" class="fixed inset-0 hidden flex items-center justify-center p-4 bg-black/95">
-        <div class="w-full max-w-5xl bg-[#0a0a0c] border border-zinc-800 rounded-[48px] overflow-hidden flex flex-col shadow-2xl max-h-[90vh]">
+    <!-- MODAL DE ANÁLISE -->
+    <div id="modal" class="fixed inset-0 items-center justify-center p-2 md:p-4 bg-black/95 overflow-hidden">
+        <div class="w-full max-w-5xl bg-[#08080a] border border-white/5 rounded-[2rem] shadow-2xl flex flex-col max-h-[95vh]">
             
-            <div class="p-8 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/40">
-                <div class="flex items-center gap-4">
-                    <div class="px-4 py-1.5 bg-blue-600 rounded-full text-[10px] font-black uppercase text-white italic">Deep Analysis</div>
-                    <span id="mDateHeader" class="text-xs mono text-zinc-500 font-bold uppercase"></span>
-                </div>
-                <button onclick="closeModal()" class="text-zinc-500 text-3xl hover:text-white transition-all">&times;</button>
+            <div class="p-4 border-b border-white/5 flex justify-between items-center bg-zinc-900/10">
+                <span class="text-[9px] font-black text-blue-400 uppercase tracking-widest">Relatório Bilateral Titan</span>
+                <button onclick="closeModal()" class="text-zinc-500 hover:text-white text-2xl px-2">&times;</button>
             </div>
 
-            <div class="p-8 lg:p-14 overflow-y-auto">
-                <!-- VERSUS HEADER -->
-                <div class="flex flex-col md:flex-row items-center justify-between gap-12 mb-16 pb-16 border-b border-zinc-900">
-                    <div class="text-center flex-1">
-                        <div class="rank-badge mb-4 inline-block"><span id="mPosH">--</span>º RANK</div>
-                        <img id="mLogoH" class="w-24 h-24 mx-auto mb-6">
-                        <h4 id="mNameH" class="text-2xl font-black uppercase text-white tracking-tighter">--</h4>
+            <div class="p-6 md:p-10 overflow-y-auto">
+                <!-- CABEÇALHO LADO A LADO FIXO -->
+                <div class="modal-header-pro mb-8 pb-8 border-b border-zinc-900">
+                    <div class="flex flex-col items-center min-w-0">
+                        <img id="mLogoH" class="w-8 h-8 mb-2 object-contain">
+                        <div id="mNameH" class="grid-name text-center">--</div>
+                        <div id="mPosH" class="text-[7px] text-zinc-600 font-bold uppercase mt-1">--</div>
+                        <div id="mLastH" class="history-tag">--</div>
+                    </div>
+                    
+                    <div class="flex flex-col items-center justify-center">
+                        <p class="text-[7px] mono text-zinc-500 uppercase mb-1 font-black italic">Previsão</p>
+                        <div id="mScore" class="score-box text-3xl md:text-5xl text-white italic">0 - 0</div>
+                        <div id="mConf" class="text-[7px] font-black text-emerald-400 mono mt-2 px-2 py-0.5 bg-emerald-400/10 rounded-full border border-emerald-400/20 uppercase">CALIBRADO</div>
                     </div>
 
-                    <div class="text-center px-10">
-                        <div class="text-[10px] mono text-zinc-600 uppercase mb-4 tracking-[0.4em]">Placar IA</div>
-                        <div id="mScore" class="text-9xl font-black italic text-white tracking-tighter">--</div>
-                        <div id="mConf" class="mt-8 text-xs font-bold text-blue-500 mono py-2 px-6 rounded-full bg-blue-500/10 border border-blue-500/20">--</div>
-                    </div>
-
-                    <div class="text-center flex-1">
-                        <div class="rank-badge mb-4 inline-block"><span id="mPosA">--</span>º RANK</div>
-                        <img id="mLogoA" class="w-24 h-24 mx-auto mb-6">
-                        <h4 id="mNameA" class="text-2xl font-black uppercase text-white tracking-tighter">--</h4>
+                    <div class="flex flex-col items-center min-w-0">
+                        <img id="mLogoA" class="w-8 h-8 mb-2 object-contain">
+                        <div id="mNameA" class="grid-name text-center">--</div>
+                        <div id="mPosA" class="text-[7px] text-zinc-600 font-bold uppercase mt-1">--</div>
+                        <div id="mLastA" class="history-tag">--</div>
                     </div>
                 </div>
 
-                <!-- ANALYTICS GRID -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
-                    
-                    <!-- COLUNA ESQUERDA: BARRAS GIGANTES -->
-                    <div class="space-y-10">
-                        <h5 class="text-xs font-black text-zinc-500 uppercase tracking-widest border-b border-zinc-800 pb-4">Probabilidades de Vitória</h5>
-                        
-                        <div class="prob-row">
-                            <div class="prob-label">
-                                <span class="prob-name">Vitória Mandante</span>
-                                <span id="mProbH" class="prob-value text-blue-500">0%</span>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- ANALYTICS -->
+                    <div class="lg:col-span-4 space-y-6">
+                        <h5 class="text-[10px] font-black text-zinc-500 uppercase italic">Probabilidades Reais</h5>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-[9px] font-bold uppercase mb-1"><span class="text-blue-500">Vitória Casa</span><span id="mProbH">0%</span></div>
+                                <div class="data-bar-bg"><div id="mBarH" class="data-bar-fill bg-blue-600 shadow-[0_0_10px_#3b82f6]"></div></div>
                             </div>
-                            <div class="huge-bar-bg"><div id="mBarH" class="huge-bar-fill fill-home" style="width: 0%"></div></div>
+                            <div>
+                                <div class="flex justify-between text-[9px] font-bold uppercase mb-1"><span class="text-zinc-500">Empate</span><span id="mProbD">0%</span></div>
+                                <div class="data-bar-bg"><div id="mBarD" class="data-bar-fill bg-zinc-600"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-[9px] font-bold uppercase mb-1"><span class="text-white">Vitória Fora</span><span id="mProbA">0%</span></div>
+                                <div class="data-bar-bg"><div id="mBarA" class="data-bar-fill bg-white shadow-[0_0_10px_#fff]"></div></div>
+                            </div>
                         </div>
-
-                        <div class="prob-row">
-                            <div class="prob-label">
-                                <span class="prob-name">Empate</span>
-                                <span id="mProbD" class="prob-value text-zinc-400">0%</span>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="bg-white/5 p-3 rounded-xl border border-white/5 text-center">
+                                <span class="block text-[7px] text-zinc-500 font-bold mb-1 uppercase">Ambas Marcam</span>
+                                <span id="mBTTS" class="text-base font-black text-emerald-500 mono italic">0%</span>
                             </div>
-                            <div class="huge-bar-bg"><div id="mBarD" class="huge-bar-fill fill-draw" style="width: 0%"></div></div>
-                        </div>
-
-                        <div class="prob-row">
-                            <div class="prob-label">
-                                <span class="prob-name">Vitória Visitante</span>
-                                <span id="mProbA" class="prob-value text-white">0%</span>
+                            <div class="bg-white/5 p-3 rounded-xl border border-white/5 text-center">
+                                <span class="block text-[7px] text-zinc-500 font-bold mb-1 uppercase">Over 2.5</span>
+                                <span id="mO25" class="text-base font-black text-white mono italic">0%</span>
                             </div>
-                            <div class="huge-bar-bg"><div id="mBarA" class="huge-bar-fill fill-away" style="width: 0%"></div></div>
                         </div>
                     </div>
 
-                    <!-- COLUNA DIREITA: GOLS E INSIGHTS -->
-                    <div class="space-y-8">
-                        <h5 class="text-xs font-black text-zinc-500 uppercase tracking-widest border-b border-zinc-800 pb-4">Gols e Tendências</h5>
-                        
-                        <div class="grid grid-cols-2 gap-6">
-                            <div class="bg-zinc-900/50 p-6 rounded-3xl border border-zinc-800">
-                                <span class="text-[9px] text-zinc-500 uppercase font-black block mb-2 tracking-widest">Chance Over 2.5</span>
-                                <div id="mOver" class="text-3xl font-black text-emerald-400">0%</div>
-                            </div>
-                            <div class="bg-zinc-900/50 p-6 rounded-3xl border border-zinc-800">
-                                <span class="text-[9px] text-zinc-500 uppercase font-black block mb-2 tracking-widest">Ambas Marcam</span>
-                                <div id="mBtts" class="text-3xl font-black text-emerald-400">0%</div>
-                            </div>
-                        </div>
-
-                        <div class="bg-blue-600/5 border-l-4 border-blue-600 p-8 rounded-r-3xl">
-                            <h6 class="text-[10px] font-black text-blue-500 uppercase mb-4 tracking-widest">Insight Neural Apex</h6>
-                            <p id="mAnalysis" class="text-lg italic text-zinc-200 leading-relaxed"></p>
-                        </div>
-
-                        <div class="pt-6 border-t border-zinc-900 flex justify-between items-center">
-                            <span class="text-[10px] mono text-zinc-600 uppercase">Volume Total xG:</span>
-                            <span id="mTotalXG" class="text-xl font-black text-white">0.00</span>
-                        </div>
+                    <!-- TEXTOS -->
+                    <div class="lg:col-span-8 space-y-4">
+                        <h5 class="text-[10px] font-black text-zinc-500 uppercase italic">Dedução Tática Multigentes</h5>
+                        <div class="report-box" id="mAnalisysH" style="color: #bfdbfe;"></div>
+                        <div class="report-box" id="mAnalisysA" style="border-color: #f4f4f5; color: #e4e4e7;"></div>
+                        <div id="mVerdict" class="p-6 rounded-[1.5rem] text-center border font-black uppercase text-xl italic shadow-2xl transition-all duration-700">--</div>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -200,177 +159,188 @@
     <script>
         const API_KEY = '8e3c0eba984c46a090a5c53c37835285';
         const PROXY = "https://corsproxy.io/?";
-        let engine = { table: [], leagueAvg: 0 };
+        let engine = { table: [], leagueAvg: 2.6, realHistory: {} };
 
-        // SISTEMA DE APRENDIZADO AUTÔNOMO
-        function getBrain() {
-            const b = localStorage.getItem('apex_v5_brain');
-            return b ? JSON.parse(b) : { learnedMatches: [], teamBias: {}, totalProcessed: 0 };
+        // DICIONÁRIO DE IDENTIDADE ULTRA-RÁPIDO (v38)
+        function cleanName(name) {
+            if (!name) return "";
+            const shortMap = {
+                "Wolverhampton Wanderers": "Wolves",
+                "Manchester United": "Man United",
+                "Manchester City": "Man City",
+                "Tottenham Hotspur": "Tottenham",
+                "Leicester City": "Leicester",
+                "West Ham United": "West Ham",
+                "Newcastle United": "Newcastle",
+                "Nottingham Forest": "Nottingham",
+                "Sheffield United": "Sheffield",
+                "Brighton & Hove Albion": "Brighton",
+                "Atlético de Madrid": "Atl. Madrid",
+                "Athletic Club": "Athletic",
+                "Real Sociedad": "R. Sociedad",
+                "Rayo Vallecano": "Rayo",
+                "Borussia Mönchengladbach": "Gladbach",
+                "Bayer 04 Leverkusen": "Leverkusen",
+                "Eintracht Frankfurt": "Eintracht",
+                "Paris Saint-Germain": "PSG",
+                "Olympique de Marseille": "Marseille",
+                "Sporting CP": "Sporting",
+                "Red Bull Salzburg": "Salzburg",
+                "Sociedade Esportiva Palmeiras": "Palmeiras",
+                "Clube Atlético Mineiro": "Atlético-MG",
+                "Club de Regatas Vasco da Gama": "Vasco",
+                "Fluminense FC": "Fluminense",
+                "Athletico Paranaense": "Athletico-PR",
+                "Red Bull Bragantino": "Bragantino",
+                "Atlético Goianiense": "Atlético-GO",
+                "Fortaleza Esporte Clube": "Fortaleza"
+            };
+
+            if(shortMap[name]) return shortMap[name];
+
+            return name
+                .replace(/\s+FC$|\s+CF$|\s+CD$|\s+SSC$|\s+AS$|\s+United$|\s+City$|\s+Wanderers$|\s+Hotspur$|\s+Athletic$|\s+Atlético$|\s+Club$|\s+EC$|\s+SAF$|\s+AC$|\s+SC$|\s+SSC$|\s+SE$|\s+CR$/gi, '')
+                .trim();
         }
 
-        function saveBrain(b) {
-            localStorage.setItem('apex_v5_brain', JSON.stringify(b));
-            updateUIStats();
-        }
+        function factorial(n) { return n <= 1 ? 1 : n * factorial(n - 1); }
+        function poisson(k, lambda) { return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k); }
 
-        async function autoLearn(league) {
-            const log = document.getElementById('learnLog');
-            const brain = getBrain();
+        async function studyMatches(league) {
             try {
                 const res = await fetch(`${PROXY}https://api.football-data.org/v4/competitions/${league}/matches?status=FINISHED`, { headers: {'X-Auth-Token': API_KEY}});
                 const data = await res.json();
-                let count = 0;
-
-                data.matches.forEach(m => {
-                    if (brain.learnedMatches.includes(m.id)) return;
+                if(!data.matches) return;
+                data.matches.slice(-50).forEach(m => {
                     const hId = m.homeTeam.id, aId = m.awayTeam.id;
-                    const sh = m.score.fullTime.home, sa = m.score.fullTime.away;
-                    if (sh > sa) { brain.teamBias[hId] = (brain.teamBias[hId] || 1) * 1.03; brain.teamBias[aId] = (brain.teamBias[aId] || 1) * 0.97; }
-                    else if (sa > sh) { brain.teamBias[aId] = (brain.teamBias[aId] || 1) * 1.03; brain.teamBias[hId] = (brain.teamBias[hId] || 1) * 0.97; }
-                    brain.learnedMatches.push(m.id);
-                    brain.totalProcessed++;
-                    count++;
+                    const hRes = m.score.fullTime.home > m.score.fullTime.away ? 'V' : (m.score.fullTime.home === m.score.fullTime.away ? 'E' : 'D');
+                    const aRes = m.score.fullTime.away > m.score.fullTime.home ? 'V' : (m.score.fullTime.home === m.score.fullTime.away ? 'E' : 'D');
+                    if(!engine.realHistory[hId]) engine.realHistory[hId] = [];
+                    if(!engine.realHistory[aId]) engine.realHistory[aId] = [];
+                    engine.realHistory[hId].push({ score: `${m.score.fullTime.home}x${m.score.fullTime.away}`, opp: cleanName(m.awayTeam.name), res: hRes });
+                    engine.realHistory[aId].push({ score: `${m.score.fullTime.away}x${m.score.fullTime.home}`, opp: cleanName(m.homeTeam.name), res: aRes });
                 });
-
-                if (count > 0) { log.innerHTML += `<div>> +${count} RESULTADOS ABSORVIDOS.</div>`; saveBrain(brain); }
-                else log.innerHTML += `<div>> RADAR ATUALIZADO.</div>`;
-            } catch (e) { log.innerHTML += `<div>> AGUARDANDO LIBERAÇÃO API...</div>`; }
+            } catch (e) { console.warn("Estudo offline."); }
         }
 
-        // SYNC DATA
-        async function syncData() {
+        async function initApp() {
             const league = document.getElementById('leagueSelect').value;
             const grid = document.getElementById('grid');
-            grid.innerHTML = `<div class="col-span-full py-20 text-center mono text-[10px] animate-pulse text-blue-500 uppercase tracking-[0.5em]">Iniciando Scan Neural...</div>`;
+            const status = document.getElementById('statusMsg');
             
-            autoLearn(league);
+            grid.innerHTML = "";
+            status.innerText = "ESTUDANDO PERFORMANCE RECENTE...";
 
             try {
+                await studyMatches(league);
+                status.innerText = "SINCRO DE DADOS...";
+
                 const [resS, resM] = await Promise.all([
                     fetch(`${PROXY}https://api.football-data.org/v4/competitions/${league}/standings`, { headers: {'X-Auth-Token': API_KEY}}),
                     fetch(`${PROXY}https://api.football-data.org/v4/competitions/${league}/matches?status=SCHEDULED`, { headers: {'X-Auth-Token': API_KEY}})
                 ]);
 
-                const sD = await resS.json();
-                const mD = await resM.json();
+                const sD = await resS.json(); const mD = await resM.json();
+                if(!sD.standings) throw new Error();
 
-                engine.table = league === 'CL' ? sD.standings.flatMap(g => g.table) : sD.standings[0].table;
+                engine.table = sD.standings[0].table;
                 let tg = 0, tj = 0;
                 engine.table.forEach(t => { tg += t.goalsFor; tj += t.playedGames; });
                 engine.leagueAvg = tg / (tj || 1);
 
-                const now = new Date();
-                const limit = new Date();
-                limit.setHours(now.getHours() + (league === 'CL' ? 48 : 96));
+                status.innerText = "ANÁLISE TITAN CONCLUÍDA";
 
-                const filtered = mD.matches.filter(m => { const d = new Date(m.utcDate); return d >= now && d <= limit; });
-                document.getElementById('matchCount').innerText = filtered.length;
-
-                if (filtered.length === 0) { grid.innerHTML = ""; document.getElementById('empty').classList.remove('hidden'); return; }
-
-                document.getElementById('empty').classList.add('hidden');
-                grid.innerHTML = filtered.map(m => {
+                grid.innerHTML = mD.matches.slice(0, 15).map(m => {
                     const h = engine.table.find(t => t.team.id === m.homeTeam.id);
                     const a = engine.table.find(t => t.team.id === m.awayTeam.id);
-                    const matchDate = new Date(m.utcDate);
-                    const dateStr = matchDate.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}) + " às " + matchDate.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-
+                    if(!h || !a) return '';
+                    const d = new Date(m.utcDate);
                     return `
-                    <div onclick="openAnalysis(${m.homeTeam.id}, ${m.awayTeam.id}, '${m.utcDate}')" class="glass-card">
-                        <div class="flex justify-between items-center mb-6">
-                            <span class="text-[10px] mono text-zinc-600 font-bold uppercase tracking-widest">${dateStr}</span>
-                            <div class="flex gap-2">
-                                <span class="rank-badge">${h ? h.position : '?'}º</span>
-                                <span class="rank-badge text-blue-500">${a ? a.position : '?'}º</span>
-                            </div>
+                    <div onclick="openAnalysis(${m.homeTeam.id}, ${m.awayTeam.id}, '${m.utcDate}')" class="data-card">
+                        <div class="flex justify-between items-center mb-4 text-[9px] mono text-zinc-600 font-bold uppercase">
+                            <span>${d.toLocaleDateString('pt-BR')} • ${d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</span>
+                            <span class="text-blue-500">TITAN v38</span>
                         </div>
-                        <div class="space-y-4">
-                            <div class="flex items-center gap-4">
-                                <img src="${m.homeTeam.crest}" class="w-8 h-8 object-contain">
-                                <span class="text-sm font-black uppercase text-white">${m.homeTeam.shortName}</span>
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-2 min-w-0 flex-1">
+                                <img src="${m.homeTeam.crest}" class="w-6 h-6 object-contain">
+                                <span class="grid-name">${cleanName(m.homeTeam.name)}</span>
                             </div>
-                            <div class="flex items-center gap-4">
-                                <img src="${m.awayTeam.crest}" class="w-8 h-8 object-contain">
-                                <span class="text-sm font-black uppercase text-white">${m.awayTeam.shortName}</span>
+                            <div class="px-1 italic text-[9px] opacity-20 font-black">VS</div>
+                            <div class="flex items-center gap-2 min-w-0 flex-1 justify-end">
+                                <span class="grid-name text-right">${cleanName(m.awayTeam.name)}</span>
+                                <img src="${m.awayTeam.crest}" class="w-6 h-6 object-contain">
                             </div>
                         </div>
                     </div>`;
                 }).join('');
-            } catch (e) { grid.innerHTML = `<div class="col-span-full py-10 text-red-500 text-center mono text-xs">LIMITE DE API ATINGIDO. AGUARDE 60s.</div>`; }
+            } catch (e) { status.innerText = "ERRO: LIMITE DE API (AGUARDE 60S)"; }
         }
 
-        // MOTOR POISSON
-        function factorial(n) { return n <= 1 ? 1 : n * factorial(n - 1); }
-        function poisson(k, lambda) { return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k); }
-
-        function openAnalysis(hId, aId, utcDate) {
+        function openAnalysis(hId, aId, dateStr) {
             const h = engine.table.find(t => t.team.id === hId);
             const a = engine.table.find(t => t.team.id === aId);
             if(!h || !a) return;
 
-            const brain = getBrain();
-            const hBias = brain.teamBias[hId] || 1;
-            const aBias = brain.teamBias[aId] || 1;
+            const hAtk = (h.goalsFor / h.playedGames) / engine.leagueAvg;
+            const aDef = (a.goalsAgainst / a.playedGames) / engine.leagueAvg;
+            const aAtk = (a.goalsFor / a.playedGames) / engine.leagueAvg;
+            const hDef = (h.goalsAgainst / h.playedGames) / engine.leagueAvg;
+            
+            const hPPG = h.points / h.playedGames, aPPG = a.points / a.playedGames;
+            const hAdv = (hPPG > aPPG * 1.1) ? 1.04 : 1.02;
 
-            const xGH = ((h.goalsFor/h.playedGames)/engine.leagueAvg) * ((a.goalsAgainst/a.playedGames)/engine.leagueAvg) * engine.leagueAvg * 1.15 * hBias;
-            const xGA = ((a.goalsFor/a.playedGames)/engine.leagueAvg) * ((h.goalsAgainst/h.playedGames)/engine.leagueAvg) * engine.leagueAvg * aBias;
+            let xGH = hAtk * aDef * engine.leagueAvg * hAdv;
+            let xGA = aAtk * hDef * engine.leagueAvg;
 
-            let pH = 0, pD = 0, pA = 0, over2 = 0, btts = 0, maxP = 0, bestS = "";
-            for(let i=0; i<6; i++) {
-                for(let j=0; j<6; j++) {
-                    const p = poisson(i, xGH) * poisson(j, xGA);
-                    if(i > j) pH += p; else if(i === j) pD += p; else pA += p;
-                    if(i + j > 2.5) over2 += p;
-                    if(i > 0 && j > 0) btts += p;
-                    if(p > maxP) { maxP = p; bestS = `${i} - ${j}`; }
+            let pH=0, pD=0, pA=0, btts=0, o25=0, maxP = -1, bestS = "0-0";
+            for(let i=0; i<7; i++) {
+                for(let j=0; j<7; j++) {
+                    const prob = poisson(i, xGH) * poisson(j, xGA);
+                    if(i > j) pH += prob; else if(i === j) pD += prob; else pA += prob;
+                    if(i > 0 && j > 0) btts += prob;
+                    if(i + j > 2.5) o25 += prob;
+                    if(prob > maxP) { maxP = prob; bestS = i + " - " + j; }
                 }
             }
 
-            document.getElementById('modal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-
+            document.getElementById('modal').classList.add('active');
+            document.getElementById('mScore').innerText = bestS;
             document.getElementById('mLogoH').src = h.team.crest;
             document.getElementById('mLogoA').src = a.team.crest;
-            document.getElementById('mNameH').innerText = h.team.shortName;
-            document.getElementById('mNameA').innerText = a.team.shortName;
-            document.getElementById('mPosH').innerText = h.position;
-            document.getElementById('mPosA').innerText = a.position;
-            document.getElementById('mScore').innerText = bestS;
-            document.getElementById('mConf').innerText = "CONFIANÇA MATEMÁTICA: " + (maxP * 100).toFixed(1) + "%";
-            document.getElementById('mDateHeader').innerText = new Date(utcDate).toLocaleString();
+            document.getElementById('mNameH').innerText = cleanName(h.team.name);
+            document.getElementById('mNameA').innerText = cleanName(a.team.name);
+            document.getElementById('mPosH').innerText = h.position + "º Rank";
+            document.getElementById('mPosA').innerText = a.position + "º Rank";
 
-            // Atualiza Barras Gigantes
-            document.getElementById('mProbH').innerText = (pH*100).toFixed(1) + '%';
-            document.getElementById('mProbD').innerText = (pD*100).toFixed(1) + '%';
-            document.getElementById('mProbA').innerText = (pA*100).toFixed(1) + '%';
-            document.getElementById('mBarH').style.width = (pH*100) + '%';
-            document.getElementById('mBarD').style.width = (pD*100) + '%';
-            document.getElementById('mBarA').style.width = (pA*100) + '%';
+            const lastH = (engine.realHistory[hId] || []).slice(-1)[0] || {score: 'N/A', opp: '?', res: '?'};
+            const lastA = (engine.realHistory[aId] || []).slice(-1)[0] || {score: 'N/A', opp: '?', res: '?'};
+            document.getElementById('mLastH').innerText = `Último: ${lastH.score} vs ${lastH.opp}`;
+            document.getElementById('mLastA').innerText = `Último: ${lastA.score} vs ${lastA.opp}`;
 
-            document.getElementById('mOver').innerText = (over2 * 100).toFixed(1) + '%';
-            document.getElementById('mBtts').innerText = (btts * 100).toFixed(1) + '%';
-            document.getElementById('mTotalXG').innerText = (xGH + xGA).toFixed(2);
+            const upd = (id, val, barId = null) => {
+                const el = document.getElementById(id);
+                el.innerText = (val * 100).toFixed(1) + '%';
+                if(barId) document.getElementById(barId).style.width = (val * 100) + '%';
+            };
+            upd('mProbH', pH, 'mBarH'); upd('mProbD', pD, 'mBarD'); upd('mProbA', pA, 'mBarA');
+            upd('mBTTS', btts); upd('mO25', o25);
 
-            let n = "";
-            const diff = h.position - a.position;
-            if (pH > 0.55 && diff > 5) {
-                n = `OPORTUNIDADE CONTRA O RANK: O ${h.team.shortName} está em ${h.position}º, mas as métricas de xG sugerem um favoritismo oculto. O aprendizado da IA aplicou um viés de ${hBias.toFixed(2)}x confirmando que o mercado de apostas está ignorando a força real do mandante.`;
-            } else if (pH > 0.65) {
-                n = `DOMÍNIO CONFIRMADO: O mandante possui uma expectativa ofensiva de elite. A probabilidade de zebra é reduzida devido à consistência defensiva do time melhor ranqueado. Entrada segura em vitória direta.`;
-            } else {
-                n = `EQUILÍBRIO TÁTICO: Confronto decidido por detalhes. A simulação aponta para um xG Total de ${(xGH+xGA).toFixed(2)}. O empate é o resultado de maior valor oculto para este cenário.`;
-            }
-            document.getElementById('mAnalysis').innerText = n;
+            document.getElementById('mAnalisysH').innerText = `Dedução Mandante: O ${cleanName(h.team.name)} apresenta eficiência ofensiva de ${hAtk.toFixed(1)}x. Vindo de um resultado de ${lastH.score}, a IA projetou um volume tático de ${(xGH).toFixed(2)} gols para este evento.`;
+            document.getElementById('mAnalisysA').innerText = `Dedução Visitante: O ${cleanName(a.team.name)} sustenta PPG de ${aPPG.toFixed(2)}. Sua média defensiva cede ${(a.goalsAgainst/a.playedGames).toFixed(2)} gols por partida. Probabilidade de vitória real: ${(pA*100).toFixed(0)}%.`;
+
+            const diff = Math.abs(pH - pA);
+            let verd = "", color = "";
+            if (diff < 0.13) { verd = "EMPATE OU VITÓRIA"; color = "border-zinc-700 text-zinc-400 bg-zinc-900"; }
+            else if (pH > pA) { verd = "VITÓRIA MANDANTE"; color = "border-blue-500 text-blue-500 bg-blue-500/10"; }
+            else { verd = "VITÓRIA VISITANTE"; color = "border-white text-white bg-white/10"; }
+            
+            const vB = document.getElementById('mVerdict');
+            vB.innerText = verd; vB.className = `p-6 rounded-[1.5rem] text-center border font-black uppercase text-xl italic shadow-2xl ${color}`;
         }
 
-        function updateUIStats() {
-            const b = getBrain();
-            document.getElementById('brainBar').style.width = Math.min(b.totalProcessed, 100) + '%';
-            document.getElementById('expCount').innerText = b.totalProcessed;
-        }
-
-        function closeModal() { document.getElementById('modal').classList.add('hidden'); document.body.style.overflow = 'auto'; }
-        window.onload = () => { syncData(); updateUIStats(); };
+        function closeModal() { document.getElementById('modal').classList.remove('active'); }
+        window.onload = initApp;
     </script>
 </body>
 </html>
